@@ -117,7 +117,7 @@ class ProfileController extends Controller
         $user_id = Auth::User()->id;
 
         if ($request->ajax()) {
-            $participants = Participant::with('event')->where([
+            $participants = Participant::select('participants.*')->with('event')->where([
                 ['user_id', '=', $user_id],
                 ['certificate', '!=', NULL]
             ]);

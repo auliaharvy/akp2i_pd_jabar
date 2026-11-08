@@ -128,7 +128,7 @@ class PositionController extends Controller
     public function datatable(Request $request)
     {
         if ($request->ajax()) {
-            $positions = Position::with('division');
+            $positions = Position::select('positions.*')->with('division');
 
             return DataTables::eloquent($positions)
                 ->addColumn('action', function ($position) {

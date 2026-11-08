@@ -159,7 +159,7 @@ class ThreadController extends Controller
     {
         if (Auth::user()->can('publish', Thread::class)) {
             if ($request->ajax()) {
-                $threads = Thread::query();
+                $threads = Thread::select('threads.*');
 
                 return DataTables::eloquent($threads)
                     ->addColumn('status', function ($thread) {
@@ -174,7 +174,7 @@ class ThreadController extends Controller
             }
         } else {
             if ($request->ajax()) {
-                $threads = Thread::with('user')
+                $threads = Thread::select('threads.*')->with('user')
                     ->where(fn ($q) => $q->where('publication_status', 1)->orWhere('user_id', Auth::user()->id));
 
                 return DataTables::eloquent($threads)

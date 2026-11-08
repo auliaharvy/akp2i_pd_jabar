@@ -99,7 +99,7 @@ class EventController extends Controller
     public function show(Event $event, Request $request)
     {
         if ($request->ajax()) {
-            $participants = Participant::with('user')->where('event_id', '=', $event->id);
+            $participants = Participant::select('participants.*')->with('user')->where('event_id', '=', $event->id);
 
             return DataTables::eloquent($participants)
                 ->addColumn('status', function ($participant) {
@@ -261,7 +261,7 @@ class EventController extends Controller
     public function datatable(Request $request)
     {
         if ($request->ajax()) {
-            $events = Event::query();
+            $events = Event::select('events.*');
 
             return DataTables::eloquent($events)
                 ->addColumn('status', function ($event) {

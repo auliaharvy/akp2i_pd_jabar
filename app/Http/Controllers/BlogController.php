@@ -161,7 +161,7 @@ class BlogController extends Controller
     {
         if (Auth::user()->can('publish', Blog::class)) {
             if ($request->ajax()) {
-                $blogs = Blog::query();
+                $blogs = Blog::select('blogs.*');
     
                 return DataTables::eloquent($blogs)
                     ->addColumn('status', function ($blog) {
@@ -176,7 +176,7 @@ class BlogController extends Controller
             }
         } else {
             if ($request->ajax()) {
-                $blogs = Blog::with('user')
+                $blogs = Blog::select('blogs.*')->with('user')
                 ->where('user_id', '=', Auth::user()->id);
     
                 return DataTables::eloquent($blogs)

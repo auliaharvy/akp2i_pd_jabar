@@ -262,7 +262,7 @@ class MemberController extends Controller
     public function datatable(Request $request)
     {
         if ($request->ajax()) {
-            $members = User::with('division', 'position')
+            $members = User::select('users.*')->with('division', 'position')
                 ->role([
                     'super_administrator',
                     'admin_pd',

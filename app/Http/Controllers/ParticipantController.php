@@ -237,7 +237,7 @@ class ParticipantController extends Controller
     public function datatable(Request $request)
     {
         if ($request->ajax()) {
-            $participants = Participant::with('user', 'event');
+            $participants = Participant::select('participants.*')->with('user', 'event');
 
             return DataTables::eloquent($participants)
                 ->addColumn('action', function ($participant) {

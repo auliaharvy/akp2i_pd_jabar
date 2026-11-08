@@ -67,7 +67,7 @@ class DivisionController extends Controller
     public function show(Division $division, Request $request)
     {
         if ($request->ajax()) {
-            $positions = Position::where('division_id', '=', $division->id);
+            $positions = Position::select('positions.*')->where('division_id', '=', $division->id);
 
             return DataTables::eloquent($positions)
                 ->addColumn('action', function ($position) {
@@ -140,7 +140,7 @@ class DivisionController extends Controller
     public function datatable(Request $request)
     {
         if ($request->ajax()) {
-            $divisions = Division::query();
+            $divisions = Division::select('divisions.*');
 
             return DataTables::eloquent($divisions)
                 ->addColumn('action', function ($division) {

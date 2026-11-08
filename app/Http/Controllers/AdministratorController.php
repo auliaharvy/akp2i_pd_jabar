@@ -33,7 +33,7 @@ class AdministratorController extends Controller
     public function create(Request $request)
     {
         if ($request->ajax()) {
-            $administrators = User::with('division', 'position')
+            $administrators = User::select('users.*')->with('division', 'position')
                 ->role(['anggota']);
 
             return DataTables::eloquent($administrators)
@@ -129,7 +129,7 @@ class AdministratorController extends Controller
     public function datatable(Request $request)
     {
         if ($request->ajax()) {
-            $administrators = User::with('division', 'position')
+            $administrators = User::select('users.*')->with('division', 'position')
                 ->role([
                     'super_administrator',
                     'admin_pd'

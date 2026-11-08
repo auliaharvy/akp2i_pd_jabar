@@ -102,7 +102,7 @@ return [
         /*
          * List of columns are are forbidden from being searched/sorted.
          */
-        'blacklist' => ['password', 'remember_token'],
+        'blacklist' => ['password', 'remember_token', 'DT_RowIndex'], // DT_RowIndex bukan kolom DB: jangan dicari/diurutkan
 
         /*
          * List of columns that are only allowed fo search/sort.

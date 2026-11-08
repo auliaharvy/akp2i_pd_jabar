@@ -144,7 +144,7 @@ class ResearchController extends Controller
     public function datatable(Request $request)
     {
         if ($request->ajax()) {
-            $researches = Research::query();
+            $researches = Research::select('research.*');
 
             return DataTables::eloquent($researches)
                 ->addColumn('action', function ($research) {
