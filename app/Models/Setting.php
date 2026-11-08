@@ -13,6 +13,9 @@ class Setting extends Model
         'email',
         'phone',
         'address',
-        'instagram'
+        'instagram',
+        'dues_amounts',
     ];
+
+    protected $casts = ['dues_amounts' => 'array'];
 }

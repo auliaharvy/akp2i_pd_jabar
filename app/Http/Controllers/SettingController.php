@@ -80,12 +80,15 @@ class SettingController extends Controller
             'phone' => 'required|string|max:255',
             'address' => 'required|string',
             'instagram' => 'required|string',
+            'dues_amounts' => 'nullable|array',
+            'dues_amounts.*' => 'nullable|numeric|min:0',
         ]);
 
         $setting->email = $request->input('email');
         $setting->phone = $request->input('phone');
         $setting->address = $request->input('address');
         $setting->instagram = $request->input('instagram');
+        $setting->dues_amounts = array_map(fn ($v) => $v === null ? null : (int) $v, $request->input('dues_amounts', []));
         $setting->save();
 
         return redirect()->route('setting.edit', '1')->with('success', 'Pengaturan telah diubah.');

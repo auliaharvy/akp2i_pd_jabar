@@ -31,7 +31,7 @@ class AuthorizationTest extends TestCase
 
     private function anotherAnggota(): User
     {
-        return User::factory()->create(['division_id' => null, 'position_id' => null])->assignRole('anggota');
+        return User::factory()->create()->assignRole('anggota');
     }
 
     private function blogPayload(array $override = []): array
@@ -193,7 +193,7 @@ class AuthorizationTest extends TestCase
     {
         $admin = $this->user('admin@mail.com');
         $super = $this->user('superadmin@mail.com');
-        $otherAdmin = User::factory()->create(['division_id' => null, 'position_id' => null])->assignRole('admin_pd');
+        $otherAdmin = User::factory()->create()->assignRole('admin_pd');
 
         foreach ([$super, $otherAdmin] as $target) {
             $this->actingAs($admin)->get(route('member.edit', $target))->assertForbidden();

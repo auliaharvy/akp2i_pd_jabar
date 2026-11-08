@@ -53,6 +53,15 @@ class LoginRequest extends FormRequest
             ]);
         }
 
+        // PRD 8.10: akun nonaktif tidak bisa login
+        if (! Auth::user()->is_active) {
+            Auth::guard('web')->logout();
+
+            throw ValidationException::withMessages([
+                'email' => 'Akun Anda dinonaktifkan. Hubungi sekretariat PD AKP2I Jawa Barat.',
+            ]);
+        }
+
         RateLimiter::clear($this->throttleKey());
     }
 

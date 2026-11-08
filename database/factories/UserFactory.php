@@ -2,8 +2,6 @@
 
 namespace Database\Factories;
 
-use App\Models\Division;
-use App\Models\Position;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Hash;
@@ -36,9 +34,6 @@ class UserFactory extends Factory
             'password' => Hash::make('password'),
             'address' => $this->faker->address,
             'photo' => $this->faker->name,
-
-            'division_id' => Division::inRandomOrder()->first(),
-            'position_id' => Position::inRandomOrder()->first()
         ];
     }
 

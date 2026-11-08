@@ -94,24 +94,7 @@
 
                                 <div class="fw-bolder mt-5">Alamat</div>
                                 <div class="text-gray-600">{{ $member->address }}</div>
-
-                                <div class="fw-bolder mt-5">Divisi</div>
-                                <div class="text-gray-600">
-                                    @if ($member->division_id == null)
-                                    -
-                                    @else
-                                    {{ $member->division->name }}
-                                    @endif
-                                </div>
-
-                                <div class="fw-bolder mt-5">Posisi</div>
-                                <div class="text-gray-600">
-                                    @if ($member->position_id == null)
-                                    -
-                                    @else
-                                    {{ $member->position->name }}
-                                    @endif
-                                </div>
+                                @include('dashboard.partials.user-positions', ['user' => $member])
                             </div>
                         </div>
 

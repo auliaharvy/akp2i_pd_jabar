@@ -55,8 +55,6 @@
                         <tr class="border-gray-200 fw-bold bg-lighten fs-6 ">
                             <th>No.</th>
                             <th>Nama Anggota</th>
-                            <th>Divisi</th>
-                            <th>Posisi</th>
                             <th>Hak Akses</th>
                             <th class="text-end"></th>
                         </tr>
@@ -85,12 +83,6 @@
                         data: 'name',
                         name: 'name'
                     }, {
-                        data: 'division.name',
-                        name: 'division.name'
-                    }, {
-                        data: 'position.name',
-                        name: 'position.name'
-                    }, {
                         data: 'role',
                         name: 'role'
                     }, {
@@ -103,7 +95,7 @@
                     }, {
                         className: 'text-center mw-100px',
                         orderable: false,
-                        targets: [5]
+                        targets: [3]
                     }],
                     pagingType: "full_numbers",
                     "language": {

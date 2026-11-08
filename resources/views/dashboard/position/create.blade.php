@@ -47,15 +47,16 @@
                 </div>
                 <div class="card-body">
                     <div class="mb-6">
-                        <label class="form-label required">Nama Divisi</label>
+                        <label class="form-label">Divisi <span class="text-muted">(kosongkan untuk jabatan inti: Ketua, Sekretaris, ...)</span></label>
                         <select class="form-select" name="division_id" id="select2Division"
-                            data-placeholder="Cari Nama Divisi" data-allow-clear="true" required>
+                            data-placeholder="Cari Nama Divisi" data-allow-clear="true">
                         </select>
                     </div>
                     <div>
                         <label class="form-label required">Nama Posisi</label>
                         <input class="form-control" type="text" name="name" value="{{ old('name') }}" required>
                     </div>
+                    <div class="mt-6"><x-dashboard.field name="sort_order" label="Urutan tampil" type="number" min="0" :value="0" /></div>
                 </div>
                 <div class="card-footer d-flex justify-content-end py-6">
                     <button type="submit" class="btn btn-sm btn-primary">

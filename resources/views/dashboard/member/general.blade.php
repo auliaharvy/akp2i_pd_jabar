@@ -78,18 +78,6 @@
                         <input class="form-control" type="email" name="email" id="email" readonly>
                     </div>
                     <div class="mb-6">
-                        <label class="form-label required">Divisi</label>
-                        <select class="form-select" name="division_id" id="select2Division"
-                            data-placeholder="Cari Nama Divisi" data-allow-clear="true" required>
-                        </select>
-                    </div>
-                    <div class="mb-6">
-                        <label class="form-label required">Posisi</label>
-                        <select class="form-select" name="position_id" id="select2Position"
-                            data-placeholder="Cari Nama Posisi" data-allow-clear="true" required>
-                        </select>
-                    </div>
-                    <div class="mb-6">
                         <label class="form-label required">Hak Akses</label>
                         <select class="form-select" name="role" required>
                             @foreach (Auth::user()->assignableRoles() as $role)
@@ -173,84 +161,6 @@
                         }
                     }
                 });
-            });
-        
-            $('#select2Division').select2({
-                language: {
-                    noResults: function () {
-                        return "Data Tidak ditemukan";
-                    },
-                    inputTooShort: function () {
-                        return 'Masukkan minimal 1 huruf';
-                    },
-                },
-                ajax: {
-                    url: '{{ route("member.select2-division") }}',
-                    dataType: 'json',
-                    delay: 250,
-                    data: function (params) {
-                        return {
-                            q: $.trim(params.term)
-                        };
-                    },
-                    processResults: function (data) {
-                        return {
-                            results: $.map(data, function (item) {
-                                return {
-                                    text: item.name,
-                                    id: item.id
-                                }
-                            })
-                        }
-                    },
-                    cache: true
-                },
-                minimumInputLength: 1
-            });
-        
-            $('#select2Division').change(function () {
-                $('#select2Position').empty();
-                let divisionID = $(this).val();
-                if (divisionID) {
-                    $('#select2Position').select2({
-                        language: {
-                            noResults: function () {
-                                return "Data Tidak ditemukan";
-                            },
-                            inputTooShort: function () {
-                                return 'Masukkan minimal 1 huruf';
-                            },
-                        },
-                        ajax: {
-                            url: "{{ route('member.select2-position') }}?divisionID=" + divisionID,
-                            dataType: 'json',
-                            delay: 250,
-                            data: function (params) {
-                                return {
-                                    q: $.trim(params.term)
-                                };
-                            },
-                            processResults: function (data) {
-                                return {
-                                    results: $.map(data, function (item) {
-                                        return {
-                                            text: item.name,
-                                            id: item.id
-                                        }
-                                    })
-                                }
-                            },
-                            cache: true
-                        },
-                        minimumInputLength: 1
-                    });
-                } else {
-                    $('#select2Position').empty();
-                }
-            });
-        
-            $('#select2Division').on('select2:clear', function (e) {
-                $("#select2Position").select2();
             });
         </script>
         {{-- End::Select2 --}}

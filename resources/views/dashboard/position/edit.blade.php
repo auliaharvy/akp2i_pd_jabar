@@ -48,16 +48,17 @@
                 </div>
                 <div class="card-body">
                     <div class="mb-6">
-                        <label class="form-label">Nama Divisi</label>
+                        <label class="form-label">Divisi <span class="text-muted">(kosong = jabatan inti)</span></label>
                         <select class="form-select" name="division_id" id="select2Division"
-                            data-placeholder="Cari Nama Divisi" data-allow-clear="true" required>
-                            <option value="{{ $position->division_id }}">{{ $position->division->name }}</option>
+                            data-placeholder="Cari Nama Divisi" data-allow-clear="true">
+                            @if ($position->division)<option value="{{ $position->division_id }}" selected>{{ $position->division->name }}</option>@endif
                         </select>
                     </div>
                     <div>
                         <label class="form-label">Nama Posisi</label>
                         <input class="form-control" type="text" name="name" value="{{ $position->name }}" required>
                     </div>
+                    <div class="mt-6"><x-dashboard.field name="sort_order" label="Urutan tampil" type="number" min="0" :value="$position->sort_order" /></div>
                 </div>
                 <div class="card-footer d-flex justify-content-end py-6">
                     <button type="submit" class="btn btn-sm btn-success">

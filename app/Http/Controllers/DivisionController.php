@@ -49,11 +49,11 @@ class DivisionController extends Controller
     {
         $request->validate([
             'name' => 'required|string|unique:divisions,name',
+            'level' => 'required|in:pd,pc',
+            'sort_order' => 'nullable|integer|min:0',
         ]);
 
-        Division::create([
-            'name' => $request->input('name')
-        ]);
+        Division::create($request->only('name', 'level') + ['sort_order' => (int) $request->input('sort_order')]);
 
         return redirect()->route('division.create')->with('success', 'Divisi ' . $request->input('name') . ' berhasil ditambahkan.');
     }
@@ -103,9 +103,13 @@ class DivisionController extends Controller
     {
         $request->validate([
             'name' => 'required|string|unique:divisions,name,' . $division->id,
+            'level' => 'required|in:pd,pc',
+            'sort_order' => 'nullable|integer|min:0',
         ]);
 
         $division->name = $request->input('name');
+        $division->level = $request->input('level');
+        $division->sort_order = (int) $request->input('sort_order');
         $division->save();
 
         return redirect()->route('division.edit', $division->id)->with('success', 'Divisi telah diubah.');

@@ -95,14 +95,6 @@
 
                                 <div class="fw-bolder mt-5">Alamat</div>
                                 <div class="text-gray-600">{{ $general->address }}</div>
-
-                                @if ($general->division_id != NULL)
-                                <div class="fw-bolder mt-5">Divisi</div>
-                                <div class="text-gray-600">{{ $general->division->name }}</div>
-
-                                <div class="fw-bolder mt-5">Posisi</div>
-                                <div class="text-gray-600">{{ $general->position->name }}</div>
-                                @endif
                             </div>
                         </div>
 

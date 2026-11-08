@@ -22,7 +22,7 @@ class RolePermissionSeeder extends Seeder
         'contact-message', 'setting', 'profile',
     ];
 
-    private const EXTRA = ['dashboard-view', 'blog-publish', 'thread-moderate'];
+    private const EXTRA = ['dashboard-view', 'blog-publish', 'thread-moderate', 'activity-log-view'];
 
     public static function permissions(): array
     {

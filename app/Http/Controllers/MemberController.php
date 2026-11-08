@@ -79,8 +79,7 @@ class MemberController extends Controller
             'phone_number' => $request->input('phone_number'),
             'email' => $request->input('email'),
             'password' => Hash::make($request->input('password')),
-            'division_id' => $request->input('division_id'),
-            'position_id' => $request->input('position_id'),
+            'organization_id' => $this->organizationFor($request),
             'photo' => $photoName
         ]);
 
@@ -171,14 +170,7 @@ class MemberController extends Controller
         if ($request->filled('password')) {
             $member->password = Hash::make($request->input('password'));
         }
-
-        if ($request->input('role') == 'umum') {
-            $member->division_id = null;
-            $member->position_id = null;
-        } else {
-            $member->division_id = $request->input('division_id');
-            $member->position_id = $request->input('position_id');
-        }
+        $member->organization_id = $this->organizationFor($request);
 
         $member->name = $request->input('name');
         $member->gender = $request->input('gender');
@@ -218,17 +210,11 @@ class MemberController extends Controller
     {
         $request->validate([
             'user_id' => 'required|exists:users,id',
-            'division_id' => 'required|numeric',
-            'position_id' => 'required|numeric',
             'role' => ['required', Rule::in($request->user()->assignableRoles())],
         ]);
 
         // B4: hanya akun umum yang bisa dinaikkan dari halaman ini
         $member = User::role('umum')->findOrFail($request->input('user_id'));
-
-        $member->division_id = $request->input('division_id');
-        $member->position_id = $request->input('position_id');
-        $member->save();
 
         $member->syncRoles($request->input('role'));
 
@@ -262,7 +248,7 @@ class MemberController extends Controller
     public function datatable(Request $request)
     {
         if ($request->ajax()) {
-            $members = User::select('users.*')->with('division', 'position')
+            $members = User::select('users.*')
                 ->role([
                     'super_administrator',
                     'admin_pd',
@@ -333,38 +319,9 @@ class MemberController extends Controller
         return response()->json($data);
     }
 
-    /**
-     * Select2 Division
-     */
-    public function select2_division(Request $request)
+    private function organizationFor(Request $request): ?int
     {
-        if ($request->ajax()) {
-            $q = $request->input('q');
-
-            $assets = Division::select('id', 'name')
-                ->where('name', 'LIKE', '%' . $q . '%')
-                ->get();
-
-            return response()->json($assets, 200);
-        }
-    }
-
-    /**
-     * Select2 Position
-     */
-    public function select2_position(Request $request)
-    {
-        $divisionID = $request->divisionID;
-        if ($request->ajax()) {
-            $q = $request->input('q');
-
-            $assets = Position::select('id', 'name')
-                ->where('division_id', '=', $divisionID)
-                ->where('name', 'LIKE', '%' . $q . '%')
-                ->get();
-
-            return response()->json($assets, 200);
-        }
+        return $request->input('role') === 'admin_pc' ? (int) $request->input('organization_id') : null;
     }
 
     /**
@@ -379,8 +336,8 @@ class MemberController extends Controller
             'date_of_birth' => 'required|date',
             'address' => 'required|string|max:255',
             'phone_number' => 'required|string|max:255',
-            'division_id' => 'required|numeric',
-            'position_id' => 'required|numeric'
+            // PRD 8.10: admin PC wajib diikat ke satu PC
+            'organization_id' => ['nullable', 'required_if:role,admin_pc', Rule::exists('organizations', 'id')->where('type', 'pc')],
         ]);
     }
 }

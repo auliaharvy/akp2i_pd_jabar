@@ -143,6 +143,29 @@
             @endcanany
             <!-- End::Data Kegiatan -->
 
+            <!-- Start::Data Organisasi (M1) -->
+            @canany(['organization-view', 'member-view', 'board-view'])
+            <div class="menu-item pt-5">
+                <div class="menu-content pb-2">
+                    <span class="menu-section text-muted text-uppercase fs-7 fw-bolder">Organisasi</span>
+                </div>
+            </div>
+            @php($m1Menu = [
+                ['organization-view', 'organization.*', 'organization.index', 'Pengurus Cabang', 'fa-sitemap'],
+                ['member-view', 'membership.index|membership.show|membership.create|membership.edit|membership.import.*', 'membership.index', 'Data Anggota', 'fa-id-card'],
+                ['member-update', 'membership.suspensions*', 'membership.suspensions', 'Usulan Skors', 'fa-user-clock'],
+                ['board-view', 'board.*', 'board.index', 'Kepengurusan', 'fa-users'],
+            ])
+            @foreach ($m1Menu as [$permission, $pattern, $route, $title, $icon])
+                @can($permission)
+                <x-dashboard.aside.single_menu linkClass="{{ request()->routeIs(...explode('|', $pattern)) ? 'active' : '' }}" :title="$title" url="{{ route($route) }}">
+                    <x-slot name="icon"><i class="fa {{ $icon }} fs-5"></i></x-slot>
+                </x-dashboard.aside.single_menu>
+                @endcan
+            @endforeach
+            @endcanany
+            <!-- End::Data Organisasi -->
+
             <!-- Start::Data Pengguna -->
             @canany(['user-view', 'division-view', 'position-view'])
             <div class="menu-item pt-5">
@@ -153,7 +176,7 @@
 
             @can('user-view')
             {{-- Start::Anggota --}}
-            <x-dashboard.aside.single_menu linkClass="{{ $memberMenu }}" title="Anggota"
+            <x-dashboard.aside.single_menu linkClass="{{ $memberMenu }}" title="Akun Pengguna"
                 url="{{ route('member.index') }}">
                 <x-slot name="icon">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
@@ -187,7 +210,7 @@
 
             @can('position-view')
             {{-- Start::Posisi --}}
-            <x-dashboard.aside.single_menu linkClass="{{ $positionMenu }}" title="Posisi"
+            <x-dashboard.aside.single_menu linkClass="{{ $positionMenu }}" title="Jabatan"
                 url="{{ route('position.index') }}">
                 <x-slot name="icon">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
@@ -269,6 +292,12 @@
             </x-dashboard.aside.single_menu>
             {{-- End::Aplikasi --}}
             @endcan
+            @can('activity-log-view')
+            <x-dashboard.aside.single_menu linkClass="{{ request()->routeIs('activity-log.*') ? 'active' : '' }}" title="Log Aktivitas" url="{{ route('activity-log.index') }}">
+                <x-slot name="icon"><i class="fa fa-history fs-5"></i></x-slot>
+            </x-dashboard.aside.single_menu>
+            @endcan
+
 
             {{-- Start::Notifikasi --}}
             {{-- <x-dashboard.aside.single_menu linkClass="{{ $notificationMenu }}" title="Notifikasi"

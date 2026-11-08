@@ -1,18 +1,26 @@
 <?php
 
+use App\Http\Controllers\ActivityLogController;
 use App\Http\Controllers\AdministratorController;
+use App\Http\Controllers\BoardMemberController;
+use App\Http\Controllers\BoardPeriodController;
+use App\Http\Controllers\MemberDueController;
+use App\Http\Controllers\MemberImportController;
+use App\Http\Controllers\MembershipController;
 use App\Http\Controllers\BlogController;
 use App\Http\Controllers\CommentController;
 use App\Http\Controllers\DivisionController;
 use App\Http\Controllers\EventController;
 use App\Http\Controllers\GeneralController;
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\OrganizationController;
 use App\Http\Controllers\MemberController;
 use App\Http\Controllers\ParticipantController;
 use App\Http\Controllers\PositionController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ResearchController;
 use App\Http\Controllers\SettingController;
+use App\Http\Controllers\SuspensionController;
 use App\Http\Controllers\ThreadController;
 use Illuminate\Support\Facades\Route;
 
@@ -77,8 +85,6 @@ Route::middleware('auth:sanctum')->prefix('dashboard')->group(function () {
     Route::get('member/general/create', [MemberController::class, 'general'])->name('member.general');
     Route::patch('member/general/assign', [MemberController::class, 'generalAssign'])->name('member.general-assign');
     Route::get('member-select2-user', [MemberController::class, 'select2_user'])->name('member.select2-user');
-    Route::get('member-select2-division', [MemberController::class, 'select2_division'])->name('member.select2-division');
-    Route::get('member-select2-position', [MemberController::class, 'select2_position'])->name('member.select2-position');
     Route::get('get/general/{id}', [MemberController::class, 'getGeneral'])->name('member.get-general');
 
     # Divisi
@@ -106,4 +112,40 @@ Route::middleware('auth:sanctum')->prefix('dashboard')->group(function () {
 
     # Aplikasi
     Route::resource('setting', SettingController::class)->only(['edit', 'update']);
+
+    # Log aktivitas (PRD 8.13)
+    Route::get('log-aktivitas', [ActivityLogController::class, 'index'])->name('activity-log.index');
+    Route::get('log-aktivitas-datatable', [ActivityLogController::class, 'datatable'])->name('activity-log.datatable');
+
+    /*
+    |--------------------------------------------------------
+    | Organisasi & Keanggotaan (M1)
+    |--------------------------------------------------------
+    */
+    Route::get('organization-datatable', [OrganizationController::class, 'datatable'])->name('organization.datatable');
+    Route::resource('organization', OrganizationController::class);
+
+    # Data anggota (PRD 8.2-8.3)
+    Route::get('keanggotaan-datatable', [MembershipController::class, 'datatable'])->name('membership.datatable');
+    Route::get('keanggotaan-export', [MembershipController::class, 'export'])->name('membership.export');
+    Route::get('keanggotaan-import', [MemberImportController::class, 'create'])->name('membership.import.form');
+    Route::get('keanggotaan-import/template', [MemberImportController::class, 'template'])->name('membership.import.template');
+    Route::post('keanggotaan-import', [MemberImportController::class, 'store'])->name('membership.import.store');
+    Route::get('keanggotaan-import/gagal/{report}', [MemberImportController::class, 'failures'])->name('membership.import.failures');
+    Route::get('keanggotaan-usulan-skors', [SuspensionController::class, 'index'])->name('membership.suspensions');
+    Route::get('keanggotaan-usulan-skors-datatable', [SuspensionController::class, 'datatable'])->name('membership.suspensions.datatable');
+    Route::patch('keanggotaan/{membership}/skors', [SuspensionController::class, 'update'])->name('membership.suspend');
+    Route::post('keanggotaan/{membership}/aktivasi', [MembershipController::class, 'sendActivation'])->name('membership.activation');
+    Route::post('keanggotaan/{membership}/iuran', [MemberDueController::class, 'store'])->name('membership.dues.store');
+    Route::delete('iuran/{due}', [MemberDueController::class, 'destroy'])->name('dues.destroy');
+    Route::get('iuran/{due}/bukti', [MemberDueController::class, 'proof'])->name('dues.proof');
+    Route::resource('keanggotaan', MembershipController::class)->parameters(['keanggotaan' => 'membership'])->names('membership');
+
+    # Kepengurusan (PRD 8.4)
+    Route::get('kepengurusan-datatable', [BoardPeriodController::class, 'datatable'])->name('board.datatable');
+    Route::get('kepengurusan-kandidat', [BoardPeriodController::class, 'candidates'])->name('board.candidates');
+    Route::post('kepengurusan/{board}/salin', [BoardPeriodController::class, 'duplicate'])->name('board.duplicate');
+    Route::post('kepengurusan/{board}/pengurus', [BoardMemberController::class, 'store'])->name('board-member.store');
+    Route::delete('pengurus/{boardMember}', [BoardMemberController::class, 'destroy'])->name('board-member.destroy');
+    Route::resource('kepengurusan', BoardPeriodController::class)->parameters(['kepengurusan' => 'board'])->names('board');
 });

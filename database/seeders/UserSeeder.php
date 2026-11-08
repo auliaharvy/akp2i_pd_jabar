@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\Organization;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
@@ -20,7 +21,8 @@ class UserSeeder extends Seeder
 
     public function run(): void
     {
-        $this->call(RolePermissionSeeder::class);
+        $this->call([RolePermissionSeeder::class, OrganizationSeeder::class]);
+        $pc = Organization::pc()->orderBy('id')->first();
 
         $i = 0;
         foreach (self::ACCOUNTS as $role => [$name, $email]) {
@@ -33,8 +35,7 @@ class UserSeeder extends Seeder
                 'email' => $email,
                 'password' => Hash::make('password'),
                 'address' => 'Bandung',
-                'division_id' => null,
-                'position_id' => null,
+                'organization_id' => $role === 'admin_pc' ? $pc->id : null,
             ])->assignRole($role);
         }
     }

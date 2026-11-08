@@ -33,7 +33,7 @@ class AdministratorController extends Controller
     public function create(Request $request)
     {
         if ($request->ajax()) {
-            $administrators = User::select('users.*')->with('division', 'position')
+            $administrators = User::select('users.*')
                 ->role(['anggota']);
 
             return DataTables::eloquent($administrators)
@@ -98,7 +98,7 @@ class AdministratorController extends Controller
         ]);
 
         if ($request->input('role') == 'super_administrator') {
-            $superadmin = User::with('division', 'position')->role(['super_administrator'])->get();
+            $superadmin = User::role(['super_administrator'])->get();
             $limit = $superadmin->count();
             if ($limit >= config('akp2i.max_super_admins') && ! $administrator->hasRole('super_administrator')) {
                 return redirect()->route('administrator.index')->with('warning', 'Jumlah super administrator tidak dapat melebihi batas (5).');
@@ -129,7 +129,7 @@ class AdministratorController extends Controller
     public function datatable(Request $request)
     {
         if ($request->ajax()) {
-            $administrators = User::select('users.*')->with('division', 'position')
+            $administrators = User::select('users.*')
                 ->role([
                     'super_administrator',
                     'admin_pd'

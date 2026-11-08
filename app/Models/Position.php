@@ -9,18 +9,15 @@ class Position extends Model
 {
     use HasFactory;
 
-    protected $fillable = [
-        'name',
-        'division_id'
-    ];
+    protected $fillable = ['name', 'division_id', 'sort_order'];
 
     public function division()
     {
         return $this->belongsTo(Division::class);
     }
 
-    public function users()
+    public function boardMembers()
     {
-        return $this->hasMany(User::class);
+        return $this->hasMany(BoardMember::class);
     }
 }

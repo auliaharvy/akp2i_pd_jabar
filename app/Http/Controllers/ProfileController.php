@@ -25,6 +25,7 @@ class ProfileController extends Controller
     public function index()
     {
         $user = Auth::user();
+        $member = $user->member()->with('organization', 'dues')->first();
 
         // Counter //
         $counter = [
@@ -39,7 +40,7 @@ class ProfileController extends Controller
         $date_of_birth->settings(['formatFunction' => 'translatedFormat']);
         $date_of_birth->format('j F Y');
 
-        return view('dashboard.profile.index', compact('user', 'counter', 'date_of_birth'));
+        return view('dashboard.profile.index', compact('user', 'counter', 'date_of_birth', 'member'));
     }
 
     /**

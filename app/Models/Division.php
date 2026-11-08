@@ -9,17 +9,17 @@ class Division extends Model
 {
     use HasFactory;
 
-    protected $fillable = [
-        'name'
-    ];
+    public const LEVELS = ['pd' => 'Pengurus Daerah', 'pc' => 'Pengurus Cabang'];
+
+    protected $fillable = ['name', 'level', 'sort_order'];
 
     public function positions()
     {
         return $this->hasMany(Position::class);
     }
 
-    public function users()
+    public function boardMembers()
     {
-        return $this->hasMany(User::class);
+        return $this->hasMany(BoardMember::class);
     }
 }

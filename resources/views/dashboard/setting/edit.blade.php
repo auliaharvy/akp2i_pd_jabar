@@ -67,6 +67,14 @@
                         <input class="form-control" type="text" name="instagram" value="{{ $setting->instagram }}"
                             required>
                     </div>
+                    <div class="fw-bolder fs-5 mt-8 mb-4">Iuran tahunan default (Rp)</div>
+                    <div class="row">
+                        @foreach (App\Models\Member::TYPES as $type => $label)
+                            <div class="col-sm-6 col-lg-3">
+                                <x-dashboard.field name="dues_amounts[{{ $type }}]" :label="$label" type="number" min="0" :value="$setting->dues_amounts[$type] ?? null" />
+                            </div>
+                        @endforeach
+                    </div>
                 </div>
 
                 <div class="card-footer d-flex justify-content-end py-6">

@@ -50,13 +50,15 @@ class PositionController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'division_id' => 'required|exists:divisions,id',
+            'division_id' => 'nullable|exists:divisions,id',
+            'sort_order' => 'nullable|integer|min:0',
             'name' => ['required', 'string', Rule::unique('positions')->where('division_id', $request->input('division_id'))],
         ]);
 
         Position::create([
             'division_id' => $request->input('division_id'),
-            'name' => $request->input('name')
+            'name' => $request->input('name'),
+            'sort_order' => (int) $request->input('sort_order'),
         ]);
 
         if (URL::previous() === URL::route('division.position', $request->input('division_id'))) {
@@ -98,12 +100,14 @@ class PositionController extends Controller
     public function update(Request $request, Position $position)
     {
         $request->validate([
-            'division_id' => 'required|exists:divisions,id',
+            'division_id' => 'nullable|exists:divisions,id',
+            'sort_order' => 'nullable|integer|min:0',
             'name' => ['required', 'string', Rule::unique('positions')->where('division_id', $request->input('division_id'))->ignore($position)],
         ]);
 
         $position->division_id = $request->input('division_id');
         $position->name = $request->input('name');
+        $position->sort_order = (int) $request->input('sort_order');
         $position->save();
 
         return redirect()->route('position.edit', $position->id)->with('success', 'Posisi telah diubah.');
@@ -131,6 +135,7 @@ class PositionController extends Controller
             $positions = Position::select('positions.*')->with('division');
 
             return DataTables::eloquent($positions)
+                ->editColumn('division.name', fn ($position) => $position->division?->name ?? 'Jabatan inti')
                 ->addColumn('action', function ($position) {
                     return view('dashboard.position.action', compact('position'))->render();
                 })

@@ -31,8 +31,8 @@ class User extends Authenticatable
         'address',
         'photo',
 
-        'division_id',
-        'position_id',
+        'organization_id',
+        'is_active',
     ];
 
     /**
@@ -52,6 +52,7 @@ class User extends Authenticatable
      */
     protected $casts = [
         'email_verified_at' => 'datetime',
+        'is_active' => 'boolean',
     ];
 
     /** Role yang boleh ditetapkan user ini ke orang lain (B4: hanya SA yang memegang SA & admin PD). */
@@ -69,6 +70,29 @@ class User extends Authenticatable
     {
         return $this->hasRole('super_administrator')
             || ! $target->hasAnyRole(['super_administrator', 'admin_pd']);
+    }
+
+    /**
+     * Organisasi yang boleh dilihat user (PRD 4.3 "scope PC").
+     * null = semua (SA/admin PD); admin PC = PC-nya; lainnya = tidak ada.
+     */
+    public function scopedOrganizationIds(): ?array
+    {
+        if ($this->hasAnyRole(['super_administrator', 'admin_pd'])) {
+            return null;
+        }
+
+        return $this->hasRole('admin_pc') && $this->organization_id ? [$this->organization_id] : [];
+    }
+
+    public function organization()
+    {
+        return $this->belongsTo(Organization::class);
+    }
+
+    public function member()
+    {
+        return $this->hasOne(Member::class);
     }
 
     public function blogs()
@@ -90,13 +114,18 @@ class User extends Authenticatable
     {
         return $this->hasMany(Participant::class);
     }
-    public function division()
+    public function boardMembers()
     {
-        return $this->belongsTo(Division::class);
+        return $this->hasMany(BoardMember::class);
     }
 
-    public function position()
+    /** Jabatan pada periode aktif, dikelompokkan per jenis organisasi (pd/pc). */
+    public function activePositions()
     {
-        return $this->belongsTo(Position::class);
+        return $this->boardMembers()
+            ->whereHas('period', fn ($q) => $q->where('is_active', true))
+            ->with('period.organization', 'position', 'division')
+            ->get()
+            ->groupBy(fn ($b) => $b->period->organization->type);
     }
 }

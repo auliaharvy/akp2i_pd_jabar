@@ -51,6 +51,10 @@
                         <label class="form-label">Nama Divisi</label>
                         <input class="form-control" type="text" name="name" value="{{ $division->name }}" required>
                     </div>
+                    <div class="row mt-6">
+                        <div class="col-md-6"><x-dashboard.field name="level" label="Tingkat" type="select" required :options="App\Models\Division::LEVELS" :value="$division->level" /></div>
+                        <div class="col-md-6"><x-dashboard.field name="sort_order" label="Urutan tampil" type="number" min="0" :value="$division->sort_order" /></div>
+                    </div>
                 </div>
                 <div class="card-footer d-flex justify-content-end py-6">
                     <button type="submit" class="btn btn-sm btn-success">

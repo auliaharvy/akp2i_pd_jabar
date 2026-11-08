@@ -92,32 +92,8 @@
                         <label class="form-label">Konfirmasi Password</label>
                         <input class="form-control" type="password" name="password_confirm">
                     </div>
-                    <div class="mb-6">
-                        <label class="form-label">Divisi</label>
-                        <select class="form-select" name="division_id" id="select2Division"
-                            data-placeholder="Cari Nama Divisi" data-allow-clear="true" required>
-                            <option value="{{ $member->division_id }}">
-                                @if ($member->division_id == null)
-                                -
-                                @else
-                                {{ $member->division->name }}
-                                @endif
-                            </option>
-                        </select>
-                    </div>
-                    <div class="mb-6">
-                        <label class="form-label">Posisi</label>
-                        <select class="form-select" name="position_id" id="select2Position"
-                            data-placeholder="Cari Nama Posisi" data-allow-clear="true" required>
-                            <option value="{{ $member->position_id }}">
-                                @if ($member->position_id == null)
-                                -
-                                @else
-                                {{ $member->position->name }}
-                                @endif
-                            </option>
-                        </select>
-                    </div>
+                    <x-dashboard.field name="organization_id" label="PC (wajib untuk Admin PC)" type="select"
+                        :options="App\Models\Organization::pc()->orderBy('name')->pluck('name', 'id')" :value="$member->organization_id" />
                     <div class="mb-6">
                         <label class="form-label">Hak Akses</label>
                         <select class="form-select" name="role" required>
@@ -168,85 +144,6 @@
         {{-- End::Flatpickr --}}
 
         {{-- Start::Select2 --}}
-        <script>
-            $('#select2Division').select2({
-                language: {
-                    noResults: function () {
-                        return "Data Tidak ditemukan";
-                    },
-                    inputTooShort: function () {
-                        return 'Masukkan minimal 1 huruf';
-                    },
-                },
-                ajax: {
-                    url: '{{ route("member.select2-division") }}',
-                    dataType: 'json',
-                    delay: 250,
-                    data: function (params) {
-                        return {
-                            q: $.trim(params.term)
-                        };
-                    },
-                    processResults: function (data) {
-                        return {
-                            results: $.map(data, function (item) {
-                                return {
-                                    text: item.name,
-                                    id: item.id
-                                }
-                            })
-                        }
-                    },
-                    cache: true
-                },
-                minimumInputLength: 1
-            });
-        
-            $('#select2Division').change(function () {
-                $('#select2Position').empty();
-                let divisionID = $(this).val();
-                if (divisionID) {
-                    $('#select2Position').select2({
-                        language: {
-                            noResults: function () {
-                                return "Data Tidak ditemukan";
-                            },
-                            inputTooShort: function () {
-                                return 'Masukkan minimal 1 huruf';
-                            },
-                        },
-                        ajax: {
-                            url: "{{ route('member.select2-position') }}?divisionID=" + divisionID,
-                            dataType: 'json',
-                            delay: 250,
-                            data: function (params) {
-                                return {
-                                    q: $.trim(params.term)
-                                };
-                            },
-                            processResults: function (data) {
-                                return {
-                                    results: $.map(data, function (item) {
-                                        return {
-                                            text: item.name,
-                                            id: item.id
-                                        }
-                                    })
-                                }
-                            },
-                            cache: true
-                        },
-                        minimumInputLength: 1
-                    });
-                } else {
-                    $('#select2Position').empty();
-                }
-            });
-        
-            $('#select2Division').on('select2:clear', function (e) {
-                $("#select2Position").select2();
-            });
-        </script>
         {{-- End::Select2 --}}
     </x-slot>
     {{-- End::Javascript --}}

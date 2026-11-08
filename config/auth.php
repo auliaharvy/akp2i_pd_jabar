@@ -90,7 +90,7 @@ return [
         'users' => [
             'provider' => 'users',
             'table' => 'password_resets',
-            'expire' => 60,
+            'expire' => 1440, // 24 jam: dipakai juga untuk link aktivasi anggota (PRD 8.2)
             'throttle' => 60,
         ],
     ],

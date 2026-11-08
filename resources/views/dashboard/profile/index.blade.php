@@ -95,14 +95,7 @@
 
                                 <div class="fw-bolder mt-5">Alamat</div>
                                 <div class="text-gray-600">{{ $user->address }}</div>
-
-                                @if ($user->division_id != NULL)
-                                <div class="fw-bolder mt-5">Divisi</div>
-                                <div class="text-gray-600">{{ $user->division->name }}</div>
-
-                                <div class="fw-bolder mt-5">Posisi</div>
-                                <div class="text-gray-600">{{ $user->position->name }}</div>
-                                @endif
+                                @include('dashboard.partials.user-positions')
                             </div>
                         </div>
 
@@ -118,6 +111,12 @@
                         <a class="nav-link text-active-primary pb-4 active" data-bs-toggle="tab"
                             href="#tab_aktivitas">Aktivitas</a>
                     </li>
+                    @if ($member)
+                    <li class="nav-item">
+                        <a class="nav-link text-active-primary pb-4" data-bs-toggle="tab"
+                            href="#tab_keanggotaan">Keanggotaan</a>
+                    </li>
+                    @endif
                     <li class="nav-item">
                         <a class="nav-link text-active-primary pb-4" data-bs-toggle="tab"
                             href="#tab_sertifikat">Sertifikat</a>
@@ -236,6 +235,12 @@
                         </div>
                     </div>
                     {{-- End::Tab Aktivitas --}}
+
+                    @if ($member)
+                    <div class="tab-pane fade" id="tab_keanggotaan" role="tabpanel">
+                        @include('dashboard.profile.membership')
+                    </div>
+                    @endif
 
                     {{-- Start::Tab Sertifikat --}}
                     <div class="tab-pane fade" id="tab_sertifikat" role="tabpanel">

@@ -54,7 +54,7 @@ class DashboardSmokeTest extends TestCase
         $this->assertNotEmpty($uris);
 
         foreach ($uris as $uri) {
-            $status = $this->actingAs($user)->get($uri, ['X-Requested-With' => 'XMLHttpRequest'])->status();
+            $status = $this->actingAs($user)->get($uri, ['X-Requested-With' => 'XMLHttpRequest'])->getStatusCode();
             $this->assertLessThan(500, $status, "GET {$uri} sebagai {$email} -> {$status}");
         }
     }
@@ -72,6 +72,10 @@ class DashboardSmokeTest extends TestCase
             'member' => User::where('email', 'member@mail.com')->first(),
             'general' => User::where('email', 'general@mail.com')->first(),
             'administrator' => User::where('email', 'admin@mail.com')->first(),
+            'organization' => \App\Models\Organization::pc()->first(),
+            'membership' => \App\Models\Member::first(),
+            'board' => \App\Models\BoardPeriod::first(),
+            'due' => \App\Models\MemberDue::first(),
         ];
         $user = User::where('email', $email)->firstOrFail();
 
@@ -82,7 +86,7 @@ class DashboardSmokeTest extends TestCase
                 continue;
             }
             $uri = '/' . str_replace('{' . $m[1][0] . '}', $models[$m[1][0]]->getKey(), $route->uri());
-            $status = $this->actingAs($user)->get($uri)->status();
+            $status = $this->actingAs($user)->get($uri)->getStatusCode();
             $this->assertLessThan(500, $status, "GET {$uri} sebagai {$email} -> {$status}");
         }
     }
