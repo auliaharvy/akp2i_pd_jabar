@@ -28,10 +28,10 @@ class HomeController extends Controller
             'general' => $generals->count()
         ];
 
-        $event = Event::latest()->first();
+        $event = Event::public()->latest('starts_at')->first();
         // B8: dashboard tetap jalan sebelum ada event
         $date_event = $event
-            ? Carbon::parse($event->date_start)->locale('id')->translatedFormat('j M Y') . ' - ' . Carbon::parse($event->date_end)->locale('id')->translatedFormat('j M Y')
+            ? $event->starts_at?->translatedFormat('j M Y') . ' - ' . $event->ends_at?->translatedFormat('j M Y')
             : null;
 
         return view('dashboard.home.index', compact(

@@ -40,7 +40,6 @@ class AsideProvider extends ServiceProvider
 
             # Kegiatan
             $eventMenu = request()->routeIs('event.*') ? 'active' : '';
-            $participantMenu = request()->routeIs('participant.*') ? 'active' : '';
 
             # Pengguna
             $memberMenu = request()->routeIs('member.*') ? 'active' : '';
@@ -65,7 +64,6 @@ class AsideProvider extends ServiceProvider
 
                 # Kegiatan
                 'eventMenu',
-                'participantMenu',
 
                 # Pengguna
                 'memberMenu',

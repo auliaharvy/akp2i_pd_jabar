@@ -1,59 +1,14 @@
-<x-guest-layout>
-    <x-auth-card>
-        <x-slot name="logo">
-            <a href="/">
-                <x-application-logo class="w-20 h-20 fill-current text-gray-500" />
-            </a>
-        </x-slot>
-
-        <!-- Validation Errors -->
-        <x-auth-validation-errors class="mb-4" :errors="$errors" />
-
-        <form method="POST" action="{{ route('register') }}">
-            @csrf
-
-            <!-- Name -->
-            <div>
-                <x-label for="name" :value="__('Name')" />
-
-                <x-input id="name" class="block mt-1 w-full" type="text" name="name" :value="old('name')" required autofocus />
-            </div>
-
-            <!-- Email Address -->
-            <div class="mt-4">
-                <x-label for="email" :value="__('Email')" />
-
-                <x-input id="email" class="block mt-1 w-full" type="email" name="email" :value="old('email')" required />
-            </div>
-
-            <!-- Password -->
-            <div class="mt-4">
-                <x-label for="password" :value="__('Password')" />
-
-                <x-input id="password" class="block mt-1 w-full"
-                                type="password"
-                                name="password"
-                                required autocomplete="new-password" />
-            </div>
-
-            <!-- Confirm Password -->
-            <div class="mt-4">
-                <x-label for="password_confirmation" :value="__('Confirm Password')" />
-
-                <x-input id="password_confirmation" class="block mt-1 w-full"
-                                type="password"
-                                name="password_confirmation" required />
-            </div>
-
-            <div class="flex items-center justify-end mt-4">
-                <a class="underline text-sm text-gray-600 hover:text-gray-900" href="{{ route('login') }}">
-                    {{ __('Already registered?') }}
-                </a>
-
-                <x-button class="ml-4">
-                    {{ __('Register') }}
-                </x-button>
-            </div>
-        </form>
-    </x-auth-card>
-</x-guest-layout>
+<x-site.auth-card title="Buat Akun">
+    <p class="mb-6 text-sm text-gray-600">Akun umum untuk mendaftar pelatihan/seminar dan mengunduh sertifikat. Pendaftaran <strong>anggota AKP2I</strong> diproses Pengurus Pusat:
+        <a href="{{ App\Models\Setting::current()->url_registration }}" target="_blank" rel="noopener" class="text-brand-secondary underline">daftar anggota di sini</a>.</p>
+    <form method="POST" action="{{ route('register') }}">
+        @csrf
+        <x-site.input name="name" label="Nama lengkap" required autocomplete="name" autofocus />
+        <x-site.input name="email" label="Email" type="email" required autocomplete="email" />
+        <x-site.input name="phone_number" label="Telepon / WhatsApp" type="tel" autocomplete="tel" />
+        <x-site.input name="password" label="Password (min. 8 karakter)" type="password" required autocomplete="new-password" />
+        <x-site.input name="password_confirmation" label="Ulangi password" type="password" required autocomplete="new-password" />
+        <x-site.button class="mt-2 w-full">Daftar</x-site.button>
+    </form>
+    <p class="mt-6 text-center text-sm">Sudah punya akun? <a href="{{ route('login') }}" class="font-semibold text-brand-secondary underline">Masuk</a></p>
+</x-site.auth-card>

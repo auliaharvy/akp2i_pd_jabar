@@ -4,6 +4,7 @@ use App\Http\Controllers\ActivityLogController;
 use App\Http\Controllers\AdministratorController;
 use App\Http\Controllers\BoardMemberController;
 use App\Http\Controllers\BoardPeriodController;
+use App\Http\Controllers\CertificateController;
 use App\Http\Controllers\MemberDueController;
 use App\Http\Controllers\MemberImportController;
 use App\Http\Controllers\MembershipController;
@@ -19,7 +20,8 @@ use App\Http\Controllers\HomeController;
 use App\Http\Controllers\OrganizationController;
 use App\Http\Controllers\PageController;
 use App\Http\Controllers\MemberController;
-use App\Http\Controllers\ParticipantController;
+use App\Http\Controllers\EventParticipantController;
+use App\Http\Controllers\MyTrainingController;
 use App\Http\Controllers\PositionController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ReportController;
@@ -40,7 +42,6 @@ Route::middleware('auth:sanctum')->prefix('dashboard')->group(function () {
     Route::patch('profil', [ProfileController::class, 'update'])->name('profile.update');
     Route::patch('profil/password', [ProfileController::class, 'password'])->name('profile.password');
     Route::patch('profil/notifikasi', [ProfileController::class, 'notifications'])->name('profile.notifications');
-    Route::get('profile-datatable', [ProfileController::class, 'datatable'])->name('profile.datatable');
 
     /*
     |--------------------------------------------------------
@@ -76,18 +77,34 @@ Route::middleware('auth:sanctum')->prefix('dashboard')->group(function () {
     |--------------------------------------------------------
     */
     # Acara
-    Route::resource('event', EventController::class);
+    # Acara (PRD 8.9)
     Route::get('event-datatable', [EventController::class, 'datatable'])->name('event.datatable');
-    Route::get('event/display/{event}', [EventController::class, 'display'])->name('event.display');
-    Route::get('event/{event}/participant', [EventController::class, 'participant'])->name('event.participant');
-    Route::get('event-select2-user', [EventController::class, 'select2_user'])->name('event.select2-user');
+    Route::post('event/{event}/salin', [EventController::class, 'duplicate'])->name('event.duplicate');
+    Route::post('event/{event}/sertifikat', [EventController::class, 'issueCertificates'])->name('event.certificates');
+    Route::resource('event', EventController::class);
 
-    # Peserta
-    Route::resource('participant', ParticipantController::class);
-    Route::get('participant-datatable', [ParticipantController::class, 'datatable'])->name('participant.datatable');
-    Route::patch('participant/certificate/{participant}', [ParticipantController::class, 'certificate'])->name('participant.certificate');
-    Route::get('participant-select2-event', [ParticipantController::class, 'select2_event'])->name('participant.select2-event');
-    Route::get('participant-select2-user', [ParticipantController::class, 'select2_user'])->name('participant.select2-user');
+    # Peserta per event
+    Route::get('event/{event}/peserta-datatable', [EventParticipantController::class, 'datatable'])->name('event.participants.datatable');
+    Route::get('event/{event}/peserta-kandidat', [EventParticipantController::class, 'candidates'])->name('event.participants.candidates');
+    Route::post('event/{event}/peserta', [EventParticipantController::class, 'store'])->name('event.participants.store');
+    Route::patch('event/{event}/kehadiran', [EventParticipantController::class, 'attendance'])->name('event.attendance');
+    Route::get('event/{event}/check-in', [EventParticipantController::class, 'checkInPage'])->name('event.check-in');
+    Route::post('event/{event}/check-in', [EventParticipantController::class, 'checkIn'])->name('event.check-in.store');
+    Route::get('event/{event}/peserta-export', [EventParticipantController::class, 'export'])->name('event.participants.export');
+    Route::post('event/{event}/pengumuman', [EventParticipantController::class, 'announce'])->name('event.announce');
+    Route::patch('peserta/{participant}/status', [EventParticipantController::class, 'status'])->name('participant.status');
+    Route::get('peserta/{participant}/bukti', [EventParticipantController::class, 'proof'])->name('participant.proof');
+    Route::patch('peserta/{participant}/sertifikat-manual', [EventParticipantController::class, 'manualCertificate'])->name('participant.manual-certificate');
+
+    # Sertifikat
+    Route::get('sertifikat/{certificate}/unduh', [CertificateController::class, 'download'])->name('certificate.download');
+    Route::patch('sertifikat/{certificate}/cabut', [CertificateController::class, 'revoke'])->name('certificate.revoke');
+    Route::post('sertifikat/{certificate}/terbit-ulang', [CertificateController::class, 'reissue'])->name('certificate.reissue');
+
+    # Pelatihan saya (peserta)
+    Route::get('pelatihan-saya', [MyTrainingController::class, 'index'])->name('my-training.index');
+    Route::get('pelatihan-saya/{participant}', [MyTrainingController::class, 'show'])->name('my-training.show');
+    Route::post('pelatihan-saya/{participant}/bukti', [MyTrainingController::class, 'uploadProof'])->name('my-training.proof');
 
     /*
     |--------------------------------------------------------
@@ -162,6 +179,7 @@ Route::middleware('auth:sanctum')->prefix('dashboard')->group(function () {
     # Data anggota (PRD 8.2-8.3)
     Route::get('keanggotaan-datatable', [MembershipController::class, 'datatable'])->name('membership.datatable');
     Route::get('keanggotaan-export', [MembershipController::class, 'export'])->name('membership.export');
+    Route::get('keanggotaan-ppl-export', [MembershipController::class, 'pplExport'])->name('membership.ppl-export');
     Route::get('keanggotaan-import', [MemberImportController::class, 'create'])->name('membership.import.form');
     Route::get('keanggotaan-import/template', [MemberImportController::class, 'template'])->name('membership.import.template');
     Route::post('keanggotaan-import', [MemberImportController::class, 'store'])->name('membership.import.store');

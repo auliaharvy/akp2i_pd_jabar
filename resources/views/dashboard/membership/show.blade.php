@@ -56,17 +56,25 @@
             @include('dashboard.membership.dues')
 
             <div class="card mb-5">
-                <div class="card-header"><div class="card-title fs-4 fw-bolder">Riwayat Event & Jam PPL</div></div>
+                <div class="card-header">
+                    <div class="card-title fs-4 fw-bolder">Riwayat Event & Jam PPL</div>
+                    <div class="card-toolbar">
+                        @php($ppl = $user->pplHoursByYear())
+                        <span class="badge badge-light-primary fs-7">{{ now()->year }}: {{ rtrim(rtrim(number_format($ppl[now()->year] ?? 0, 2, ',', '.'), '0'), ',') }} jam</span>
+                    </div>
+                </div>
                 <div class="card-body">
-                    @forelse ($user->participants as $participant)
-                        <div class="d-flex justify-content-between border-bottom py-2">
-                            <span>{{ $participant->event?->title }}</span>
-                            <span class="text-muted">{{ $participant->event?->date_start ? Carbon\Carbon::parse($participant->event->date_start)->translatedFormat('j M Y') : '' }}</span>
+                    @if ($ppl->isNotEmpty())
+                        <div class="text-muted fs-7 mb-4">Rekap per tahun: @foreach ($ppl as $year => $hours){{ $year }} = {{ rtrim(rtrim(number_format($hours, 2, ',', '.'), '0'), ',') }} jam{{ $loop->last ? '' : ' · ' }}@endforeach</div>
+                    @endif
+                    @forelse ($user->participants->sortByDesc(fn ($p) => $p->event?->starts_at) as $participant)
+                        <div class="d-flex justify-content-between border-bottom py-2 gap-3">
+                            <span>{{ $participant->event?->title }} <span class="text-muted fs-7">· {{ App\Models\Participant::STATUSES[$participant->status] }}{{ $participant->attended_at ? ' · hadir' : '' }}</span></span>
+                            <span class="text-muted text-nowrap">{{ $participant->event?->starts_at?->translatedFormat('j M Y') }}</span>
                         </div>
                     @empty
                         <div class="text-muted">Belum mengikuti event.</div>
                     @endforelse
-                    <div class="text-muted fs-7 mt-4">Rekap jam PPL tersedia setelah modul pendaftaran & sertifikat event (M4).</div>
                 </div>
             </div>
         </div>

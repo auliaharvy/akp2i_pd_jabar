@@ -4,6 +4,7 @@
             <div class="card-title fs-3 fw-bolder">Daftar Anggota</div>
             <div class="card-toolbar gap-2 flex-wrap">
                 <a class="btn btn-sm btn-light" id="export-link" href="{{ route('membership.export') }}"><i class="fa fa-download"></i> Export CSV</a>
+                <a class="btn btn-sm btn-light" href="{{ route('membership.ppl-export', ['tahun' => now()->year]) }}"><i class="fa fa-clock"></i> Rekap PPL {{ now()->year }}</a>
                 @can('create', App\Models\Member::class)
                     <a class="btn btn-sm btn-light" href="{{ route('membership.import.form') }}"><i class="fa fa-upload"></i> Import CSV</a>
                     <a class="btn btn-sm btn-light-primary" href="{{ route('membership.create') }}"><i class="fa fa-plus"></i> Tambah Anggota</a>

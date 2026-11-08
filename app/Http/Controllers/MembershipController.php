@@ -19,7 +19,7 @@ class MembershipController extends Controller
 
     public function __construct()
     {
-        $this->middleware('permission:member-view')->only(['index', 'show', 'datatable', 'export']);
+        $this->middleware('permission:member-view')->only(['index', 'show', 'datatable', 'export', 'pplExport']);
         $this->middleware('permission:member-update')->only(['sendActivation']);
         $this->authorizeResource(Member::class, 'membership');
     }
@@ -150,6 +150,25 @@ class MembershipController extends Controller
             });
             fclose($out);
         }, 'anggota-akp2i-jabar-' . now()->format('Ymd-His') . '.csv', ['Content-Type' => 'text/csv']);
+    }
+
+    /** Rekap jam PPL per anggota untuk satu tahun (PRD 8.9), sesuai scope. */
+    public function pplExport(Request $request)
+    {
+        $this->authorize('viewAny', Member::class);
+        $year = (int) ($request->query('tahun') ?: now()->year);
+        $members = $this->filtered($request)->with('user')->orderBy('member_number');
+
+        return response()->streamDownload(function () use ($members, $year) {
+            $out = fopen('php://output', 'w');
+            fputcsv($out, ['nomor_anggota', 'nama', 'pc', 'tahun', 'jam_ppl']);
+            $members->chunk(500, function ($chunk) use ($out, $year) {
+                foreach ($chunk as $m) {
+                    fputcsv($out, [$m->member_number, $m->user->name, $m->organization->name, $year, $m->user->pplHoursByYear()[$year] ?? 0]);
+                }
+            });
+            fclose($out);
+        }, "rekap-ppl-{$year}.csv", ['Content-Type' => 'text/csv']);
     }
 
     private function organizationOptions(Request $request)

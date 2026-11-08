@@ -24,10 +24,9 @@ class ParticipantFactory extends Factory
     public function definition()
     {
         return [
-            'reason' => $this->faker->sentence,
-            'file' => $this->faker->word,
-            'data_status' => $this->faker->boolean(),
-            'certificate' => $this->faker->word,
+            'status' => 'verified',
+            'amount' => 0,
+            'verified_at' => now(),
             
             'event_id' => Event::inRandomOrder()->first(),
             'user_id' => User::inRandomOrder()->first()

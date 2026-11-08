@@ -35,6 +35,9 @@
             <x-dashboard.aside.single_menu title="Lihat Situs" url="{{ route('site.home') }}">
                 <x-slot name="icon"><i class="fa fa-globe fs-5"></i></x-slot>
             </x-dashboard.aside.single_menu>
+            <x-dashboard.aside.single_menu linkClass="{{ request()->routeIs('my-training.*') ? 'active' : '' }}" title="Pelatihan Saya" url="{{ route('my-training.index') }}">
+                <x-slot name="icon"><i class="fa fa-ticket-alt fs-5"></i></x-slot>
+            </x-dashboard.aside.single_menu>
             <!-- End::Dashboard -->
 
             <!-- Start::Data Postingan -->
@@ -99,7 +102,7 @@
             <!-- End::Data Postingan -->
 
             <!-- Start::Data Kegiatan -->
-            @canany(['event-view', 'participant-view'])
+            @can('event-view')
             <div class="menu-item pt-5">
                 <div class="menu-content pb-2">
                     <span class="menu-section text-muted text-uppercase fs-7 fw-bolder">Kegiatan</span>
@@ -125,25 +128,7 @@
             </x-dashboard.aside.single_menu>
             {{-- End::Acara --}}
             @endcan
-
-            @can('participant-view')
-            {{-- Start::Peserta --}}
-            <x-dashboard.aside.single_menu linkClass="{{ $participantMenu }}" title="Peserta"
-                url="{{ route('participant.index') }}">
-                <x-slot name="icon">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
-                        <path opacity="0.3"
-                            d="M22 12C22 17.5 17.5 22 12 22C6.5 22 2 17.5 2 12C2 6.5 6.5 2 12 2C17.5 2 22 6.5 22 12ZM12 7C10.3 7 9 8.3 9 10C9 11.7 10.3 13 12 13C13.7 13 15 11.7 15 10C15 8.3 13.7 7 12 7Z"
-                            fill="black" />
-                        <path
-                            d="M12 22C14.6 22 17 21 18.7 19.4C17.9 16.9 15.2 15 12 15C8.8 15 6.09999 16.9 5.29999 19.4C6.99999 21 9.4 22 12 22Z"
-                            fill="black" />
-                    </svg>
-                </x-slot>
-            </x-dashboard.aside.single_menu>
-            {{-- End::Peserta --}}
             @endcan
-            @endcanany
             <!-- End::Data Kegiatan -->
 
             <!-- Start::Website (M2) -->

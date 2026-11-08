@@ -2,14 +2,13 @@
 
 namespace App\Models;
 
-use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 use Spatie\Permission\Traits\HasRoles;
 
-class User extends Authenticatable
+class User extends Authenticatable implements \Illuminate\Contracts\Auth\MustVerifyEmail
 {
     use HasRoles, HasApiTokens, HasFactory, Notifiable;
 
@@ -56,6 +55,12 @@ class User extends Authenticatable
         'is_active' => 'boolean',
         'notify_forum_replies' => 'boolean',
     ];
+
+    /** Email verifikasi lewat antrean (PRD 8.10). */
+    public function sendEmailVerificationNotification(): void
+    {
+        $this->notify(new \App\Notifications\VerifyEmailQueued);
+    }
 
     /** Role yang boleh ditetapkan user ini ke orang lain (B4: hanya SA yang memegang SA & admin PD). */
     public function assignableRoles(): array
@@ -116,6 +121,15 @@ class User extends Authenticatable
     {
         return $this->hasMany(Participant::class);
     }
+    /** Rekap jam PPL/SKP (PRD 8.9): jumlah `skp_hours` event yang dihadiri, per tahun event. */
+    public function pplHoursByYear(): \Illuminate\Support\Collection
+    {
+        return $this->participants()->where('participants.status', 'verified')->whereNotNull('attended_at')
+            ->join('events', 'events.id', '=', 'participants.event_id')->whereNull('events.deleted_at')
+            ->selectRaw('YEAR(events.starts_at) as year, SUM(COALESCE(events.skp_hours, 0)) as hours')
+            ->groupBy('year')->orderByDesc('year')->pluck('hours', 'year')->map(fn ($h) => (float) $h);
+    }
+
     public function boardMembers()
     {
         return $this->hasMany(BoardMember::class);

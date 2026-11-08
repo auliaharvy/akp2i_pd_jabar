@@ -65,38 +65,30 @@ class M0BugFixTest extends TestCase
         $this->assertTrue(password_verify('rahasia123', $member->fresh()->password));
     }
 
-    public function test_b6_b11_participant_file_is_replaced_with_random_name()
+    public function test_b6_b11_manual_certificate_file_is_replaced_with_random_name()
     {
-        Storage::fake();
+        Storage::fake('public');
         $participant = Participant::first();
-        $old = $participant->file;
+        $admin = $this->user('superadmin@mail.com');
 
-        $this->actingAs($this->user('superadmin@mail.com'))->patch(route('participant.update', $participant), [
-            'event_id' => $participant->event_id,
-            'user_id' => $participant->user_id,
-            'reason' => 'alasan',
-            'data_status' => 1,
-            'file' => UploadedFile::fake()->create('cv.pdf', 10, 'application/pdf'),
-        ])->assertSessionHasNoErrors();
+        $this->actingAs($admin)->patch(route('participant.manual-certificate', $participant), ['certificate' => UploadedFile::fake()->create('sertifikat.pdf', 10, 'application/pdf')])
+            ->assertSessionHasNoErrors();
+        $old = $participant->fresh()->certificate;
+        $this->actingAs($admin)->patch(route('participant.manual-certificate', $participant), ['certificate' => UploadedFile::fake()->create('sertifikat.pdf', 10, 'application/pdf')]);
+        $new = $participant->fresh()->certificate;
 
-        $new = $participant->fresh()->file;
         $this->assertNotSame($old, $new);
-        $this->assertNotSame('cv.pdf', $new);
-        Storage::assertExists('public/participant/file/' . $new);
+        $this->assertStringNotContainsString('sertifikat.pdf', $new);
+        Storage::disk('public')->assertExists($new);
+        Storage::disk('public')->assertMissing($old);
     }
 
     public function test_b11_participant_cannot_register_twice_for_same_event()
     {
-        Storage::fake();
         $participant = Participant::first();
 
-        $this->actingAs($this->user('superadmin@mail.com'))->post(route('participant.store'), [
-            'event_id' => $participant->event_id,
-            'user_id' => $participant->user_id,
-            'reason' => 'lagi',
-            'data_status' => 1,
-            'file' => UploadedFile::fake()->create('cv.pdf', 10, 'application/pdf'),
-        ])->assertSessionHasErrors('user_id');
+        $this->actingAs($this->user('superadmin@mail.com'))->post(route('event.participants.store', $participant->event_id), ['user_id' => $participant->user_id])
+            ->assertSessionHasErrors('user_id');
 
         $this->assertSame(1, Participant::where('event_id', $participant->event_id)->where('user_id', $participant->user_id)->count());
     }
@@ -104,14 +96,9 @@ class M0BugFixTest extends TestCase
     public function test_b7_certificate_link_points_to_stored_file()
     {
         $member = $this->user('member@mail.com');
-        Participant::factory()->create(['event_id' => Event::factory()->create()->id, 'user_id' => $member->id, 'certificate' => 'abc.png']);
+        $participant = Participant::factory()->create(['event_id' => Event::factory()->create()->id, 'user_id' => $member->id, 'certificate' => 'participant/certificate/abc.png']);
 
-        $actions = $this->actingAs($member)
-            ->getJson(route('profile.datatable'), ['X-Requested-With' => 'XMLHttpRequest'])
-            ->assertOk()
-            ->json('data.*.action');
-
-        $this->assertStringContainsString('/storage/participant/certificate/abc.png', implode(' ', $actions));
+        $this->actingAs($member)->get(route('my-training.show', $participant))->assertOk()->assertSee('/storage/participant/certificate/abc.png', false);
     }
 
     public function test_b8_dashboard_home_works_without_events()

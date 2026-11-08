@@ -119,7 +119,7 @@
                     @endif
                     <li class="nav-item">
                         <a class="nav-link text-active-primary pb-4" data-bs-toggle="tab"
-                            href="#tab_sertifikat">Sertifikat</a>
+                            href="#tab_sertifikat">Pelatihan</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link text-active-primary pb-4" data-bs-toggle="tab"
@@ -248,28 +248,7 @@
 
                     {{-- Start::Tab Sertifikat --}}
                     <div class="tab-pane fade" id="tab_sertifikat" role="tabpanel">
-                        <div class="card card-flush mb-6 mb-xl-9">
-                            <div class="card-header mt-6">
-                                <div class="card-title flex-column">
-                                    <h2 class="mb-1">Sertifikat</h2>
-                                    <div class="fs-6 fw-bold text-muted">Sertifikat diberikan setelah
-                                        mengikuti acara di {{ config('app.name') }}.</div>
-                                </div>
-                            </div>
-
-                            <div class="card-body p-9 pt-10">
-                                <table id="datatable"
-                                    class="table table-sm table-row-bordered gy-5 gs-8 border rounded no-footer nowrap dataTable">
-                                    <thead>
-                                        <tr class="border-gray-200 fw-bold bg-lighten fs-6 ">
-                                            <th>No.</th>
-                                            <th>Judul Acara</th>
-                                            <th class="text-end"></th>
-                                        </tr>
-                                    </thead>
-                                </table>
-                            </div>
-                        </div>
+                        @include('dashboard.profile.training')
                     </div>
                     {{-- End::Tab Sertifikat --}}
 
@@ -418,61 +397,6 @@
             });
         </script>
         {{-- End::Flatpickr --}}
-
-        {{-- Start::Datatable --}}
-        <script src="{{ asset('plugins/custom/datatables/datatables.bundle.js') }}"></script>
-        <script>
-            $(document).ready(function () {
-                $('#datatable').DataTable({
-                    processing: true,
-                    serverSide: true,
-                    ajax: "{{ route('profile.datatable') }}",
-                    columns: [{
-                            data: 'DT_RowIndex',
-                            name: 'DT_RowIndex'
-                        },
-                        {
-                            data: 'event.title',
-                            name: 'event.title'
-                        },
-                        {
-                            data: 'action',
-                            name: 'action'
-                        }
-                    ],
-                    columnDefs: [{
-                            className: 'text-center',
-                            targets: [0]
-                        },
-                        {
-                            className: 'min-w-250px',
-                            targets: [1]
-                        },
-                        {
-                            className: 'text-center mw-100px',
-                            orderable: false,
-                            targets: [2]
-                        }
-                    ],
-                    pagingType: "full_numbers",
-                    "language": {
-                        "search": "Cari:",
-                        "emptyTable": "Tidak ada data yang tersedia pada tabel ini",
-                        "info": "Menampilkan _START_ - _END_ dari _TOTAL_ data",
-                        "infoEmpty": "Tidak menampilkan data apapun",
-                        "loadingRecords": "Memuat...",
-                        "processing": "Memproses...",
-                        "zeroRecords": "Tidak ada data yang cocok ditemukan",
-                    },
-                    dom: "<'table-responsive'tr>" +
-        
-                        "<'row'" +
-                        "<'d-flex align-items-center justify-content-center'p>" +
-                        ">"
-                });
-            });
-        </script>
-        {{-- End::Datatable --}}
     </x-slot>
     {{-- End::Javascript --}}
 </x-dashboard.layout>

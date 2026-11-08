@@ -188,12 +188,12 @@
                             <div class="d-flex align-items-sm-center mb-7">
                                 <div class="symbol symbol-70px symbol-2by3 me-6">
                                     <div class="symbol-label"
-                                        style="background-image:url('{{ asset('storage/event/'.$event->thumbnail) }}')">
+                                        style="background-image:url('{{ $event->thumbnail ? Storage::disk('public')->url($event->thumbnail) : '' }}')">
                                     </div>
                                 </div>
                                 <div class="d-flex flex-row-fluid flex-wrap align-items-center">
                                     <div class="flex-grow-1 me-2">
-                                        <a href="{{ route('event.show', $event->id) }}"
+                                        <a href="{{ route('site.training.show', $event->slug) }}"
                                             class="text-gray-800 fw-bolder text-hover-primary fs-6">{{ $event->title
                                             }}</a>
                                         <span class="text-muted fw-bold d-block pt-1">{{ $date_event }}</span>

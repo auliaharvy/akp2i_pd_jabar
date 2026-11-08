@@ -4,6 +4,7 @@ use App\Http\Controllers\SiteController;
 use App\Http\Controllers\Site\ForumController;
 use App\Http\Controllers\Site\JournalController;
 use App\Http\Controllers\Site\NewsController;
+use App\Http\Controllers\Site\TrainingController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -32,14 +33,6 @@ Route::controller(SiteController::class)->name('site.')->group(function () {
     Route::get('kebijakan-privasi', 'privacy')->name('privacy');
     Route::get('syarat-ketentuan', 'terms')->name('terms');
     Route::get('halaman/{slug}', 'page')->name('page');
-
-    # Menyusul M4: tampil empty state
-    $soon = fn (string $uri, string $name, string $title, string $milestone) => Route::get($uri, 'comingSoon')
-        ->name($name)->defaults('title', $title)->defaults('milestone', $milestone);
-    $soon('pelatihan', 'training', 'Pusat Pelatihan', 'M4');
-    $soon('pelatihan/{slug}', 'training.show', 'Pusat Pelatihan', 'M4');
-    $soon('sertifikat/{kode}', 'certificate', 'Verifikasi Sertifikat', 'M4');
-
     # SEO
     Route::get('sitemap.xml', 'sitemap')->name('sitemap');
     Route::get('robots.txt', 'robots')->name('robots');
@@ -60,6 +53,12 @@ Route::name('site.')->group(function () {
         Route::post('forum/laporan', 'report')->middleware('auth')->name('forum.report');
         Route::get('forum/{slug}', 'show')->name('forum.show');
         Route::post('forum/{slug}/komentar', 'comment')->middleware(['auth', 'throttle:comments'])->name('forum.comment');
+    });
+    Route::controller(TrainingController::class)->group(function () {
+        Route::get('pelatihan', 'index')->name('training');
+        Route::get('pelatihan/{slug}', 'show')->name('training.show');
+        Route::post('pelatihan/{slug}/daftar', 'register')->middleware(['auth', 'verified', 'throttle:10,1'])->name('training.register');
+        Route::get('sertifikat/{code}', 'certificate')->middleware('throttle:30,1')->name('certificate');
     });
     Route::controller(JournalController::class)->group(function () {
         Route::get('jurnal', 'index')->name('journal');

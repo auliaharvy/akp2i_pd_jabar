@@ -2,292 +2,195 @@
 
 namespace App\Http\Controllers;
 
+use App\Jobs\IssueEventCertificates;
 use App\Models\Event;
-use App\Models\Participant;
-use App\Models\User;
-use Carbon\Carbon;
+use App\Models\Organization;
+use App\Support\Html;
+use App\Support\Upload;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\Session;
+use Illuminate\Validation\Rule;
 use Yajra\DataTables\Facades\DataTables;
 
+/** Acara/Event (PRD 8.9). Admin PC hanya mengelola event PC-nya (scope PC). */
 class EventController extends Controller
 {
     public function __construct()
     {
-        $this->middleware(['permission:event-view'])->only(['index', 'show', 'display', 'datatable']);
-        $this->middleware(['permission:event-create'])->only(['create', 'store', 'participant']);
-        $this->middleware(['permission:event-update'])->only(['edit', 'update']);
-        $this->middleware(['permission:event-delete'])->only(['destroy']);
+        $this->middleware('permission:event-view')->only(['index', 'show', 'datatable']);
         $this->authorizeResource(Event::class, 'event');
     }
 
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
     public function index()
     {
         return view('dashboard.event.index');
     }
 
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
-    {
-        return view('dashboard.event.create');
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request $request
-     * @return \Illuminate\Http\Response
-     */
-    public function store(Request $request)
-    {
-        $this->validate_request($request);
-        $request->validate([
-            'thumbnail' => 'required|file|max:3048|mimes:jpeg,jpg,png,webp'
-        ]);
-
-        if (strtotime($request->input('date_start')) > strtotime($request->input('date_end'))) {
-            return redirect()->route('event.create')->with('warning', 'Waktu mulai tidak boleh lebih besar dari waktu selesai');
-        }
-
-        $slug = Str::slug($request->input('title') . '-' . time());
-        $photoFile = $request->file('thumbnail');
-        $photoName = $photoFile->hashName();
-        Storage::putFileAs('public/event', $photoFile, $photoName);
-
-        Event::create([
-            'title' => $request->input('title'),
-            'slug' => $slug,
-            'date_start' => $request->input('date_start'),
-            'date_end' => $request->input('date_end'),
-            'location' => $request->input('location'),
-            'event_status' => $request->input('event_status'),
-            'body' => $request->input('body'),
-            'thumbnail' => $photoName
-        ]);
-
-        return redirect()->route('event.create')->with('success', 'Acara berhasil ditambahkan.');
-    }
-
-    /**
-     * Direct to participant create with event id
-     */
-    public function participant($event)
-    {
-        $eventGet = Event::where('id', '=', $event)->first();
-
-        return view('dashboard.event.participant', compact('eventGet'));
-    }
-
-    /**
-     * Display the specified resource.
-     *
-     * @param  \App\Models\Event  $event
-     * @return \Illuminate\Http\Response
-     */
-    public function show(Event $event, Request $request)
-    {
-        if ($request->ajax()) {
-            $participants = Participant::select('participants.*')->with('user')->where('event_id', '=', $event->id);
-
-            return DataTables::eloquent($participants)
-                ->addColumn('status', function ($participant) {
-                    return view('dashboard.participant.status', compact('participant'))->render();
-                })
-                ->addColumn('certificate', function ($participant) {
-                    return view('dashboard.participant.certificate', compact('participant'))->render();
-                })
-                ->addColumn('action', function ($participant) {
-                    return view('dashboard.event.action_show', compact('participant'))->render();
-                })
-                ->rawColumns(['status', 'certificate', 'action'])
-                ->addIndexColumn()
-                ->make(true);
-        }
-
-        // Tanggal Mulai //
-        $date_start = Carbon::parse($event->date_start)->locale('id');
-        $date_start->settings(['formatFunction' => 'translatedFormat']);
-
-        // Tanggal Selesai //
-        $date_end = Carbon::parse($event->date_end)->locale('id');
-        $date_end->settings(['formatFunction' => 'translatedFormat']);
-
-        $date_event = $date_start->format('l, j F Y') . ' - ' . $date_end->format('l, j F Y');
-
-        return view('dashboard.event.show', compact('event', 'date_event'));
-    }
-
-    /**
-     * Display the specified resource.
-     *
-     * @param  \App\Models\Event  $event
-     * @return \Illuminate\Http\Response
-     */
-    public function display(Event $event)
-    {
-        // Tanggal Mulai //
-        $date_start = Carbon::parse($event->date_start)->locale('id');
-        $date_start->settings(['formatFunction' => 'translatedFormat']);
-
-        // Tanggal Selesai //
-        $date_end = Carbon::parse($event->date_end)->locale('id');
-        $date_end->settings(['formatFunction' => 'translatedFormat']);
-
-        $date_event = $date_start->format('l, j F Y') . ' - ' . $date_end->format('l, j F Y');
-
-        return view('dashboard.event.display', compact('event', 'date_event'));
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  \App\Models\Event  $event
-     * @return \Illuminate\Http\Response
-     */
-    public function edit(Event $event)
-    {
-        return view('dashboard.event.edit', compact('event'));
-    }
-
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\Event $event
-     * @return \Illuminate\Http\Response
-     */
-    public function update(Request $request, Event $event)
-    {
-        $this->validate_request($request);
-
-        if (strtotime($request->input('date_start')) > strtotime($request->input('date_end'))) {
-            return redirect()->route('event.edit', $event->id)->with('warning', 'Waktu mulai tidak boleh lebih besar dari waktu selesai');
-        }
-
-        $slug = Str::slug($request->input('title') . '-' . time());
-
-        if ($request->hasFile('thumbnail')) {
-            $request->validate([
-                'thumbnail' => 'nullable|file|max:3048|mimes:jpeg,jpg,png,webp'
-            ]);
-
-            if (Storage::exists('public/event/' . $event->thumbnail)) {
-                Storage::delete('public/event/' . $event->thumbnail);
-            }
-
-            $photoFile = $request->file('thumbnail');
-            $photoName = $photoFile->hashName();
-            Storage::putFileAs('public/event', $photoFile, $photoName);
-
-            $event->thumbnail = $photoName;
-        }
-
-        $event->title = $request->input('title');
-        $event->slug  = $slug;
-        $event->body = $request->input('body');
-        $event->date_start = $request->input('date_start');
-        $event->date_end = $request->input('date_end');
-        $event->location = $request->input('location');
-        $event->event_status = $request->input('event_status');
-        $event->save();
-
-        return redirect()->route('event.edit', $event->id)->with('success', 'Acara telah diubah.');
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  \App\Models\Event  $event
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy(Event $event)
-    {
-        Session::flash('success', 'Acara telah dihapus.');
-
-        if (Storage::exists('public/event/' . $event->thumbnail)) {
-            Storage::delete('public/event/' . $event->thumbnail);
-        }
-
-        $event->delete();
-    }
-
-    /**
-     * Select2 User
-     */
-    public function select2_user(Request $request)
-    {
-        if ($request->ajax()) {
-            $q = $request->input('q');
-
-            if (Auth::user()->hasRole('super_administrator')) {
-                $assets = User::select('id', 'name')
-                    ->where('name', 'LIKE', '%' . $q . '%')
-                    ->role([
-                        'super_administrator',
-                        'admin_pd',
-                        'anggota',
-                        'umum'
-                    ])->get();
-            } else {
-                $assets = User::select('id', 'name')
-                    ->where('name', 'LIKE', '%' . $q . '%')
-                    ->role([
-                        'admin_pd',
-                        'editor',
-                        'admin_pc',
-                        'anggota',
-                        'umum'
-                    ])->get();
-            }
-            return response()->json($assets, 200);
-        }
-    }
-
-    /**
-     * Yajra datatable
-     */
     public function datatable(Request $request)
     {
-        if ($request->ajax()) {
-            $events = Event::select('events.*');
+        $events = Event::select('events.*')->with('organization')
+            ->withCount(['participants as registrants_count' => fn ($q) => $q->whereIn('status', ['pending', 'verified'])])
+            ->visibleTo($request->user())
+            ->when($request->filled('status'), fn ($q) => $q->where('events.status', $request->input('status')));
 
-            return DataTables::eloquent($events)
-                ->addColumn('status', function ($event) {
-                    return view('dashboard.event.status', compact('event'))->render();
-                })
-                ->addColumn('action', function ($event) {
-                    return view('dashboard.event.action', compact('event'))->render();
-                })
-                ->rawColumns(['status', 'action'])
-                ->addIndexColumn()
-                ->make(true);
-        }
+        return DataTables::eloquent($events)
+            ->editColumn('type', fn ($e) => Event::TYPES[$e->type])
+            ->editColumn('status', fn ($e) => Event::STATUSES[$e->status])
+            ->editColumn('starts_at', fn ($e) => $e->starts_at?->translatedFormat('d M Y H:i'))
+            ->addColumn('seats', fn ($e) => $e->registrants_count . ($e->quota ? " / {$e->quota}" : ''))
+            ->addColumn('action', fn ($e) => view('components.dashboard.row-actions', [
+                'show' => route('event.show', $e),
+                'edit' => $request->user()->can('update', $e) ? route('event.edit', $e) : null,
+                'delete' => $request->user()->can('delete', $e) ? route('event.destroy', $e) : null,
+                'confirm' => 'Event dihapus (arsip). Data peserta & sertifikat tetap tersimpan.',
+            ])->render())
+            ->rawColumns(['action'])
+            ->addIndexColumn()
+            ->make(true);
     }
 
-    /**
-     * Validate request
-     */
-    public function validate_request($request)
+    public function create(Request $request)
     {
-        $request->validate([
-            'title' => 'required|string|max:300',
-            'date_start' => 'required|date',
-            'date_end' => 'required|date',
-            'location' => 'required|string|max:300',
-            'event_status' => 'required|boolean',
-            'body' => 'required|string'
+        return view('dashboard.event.form', [
+            'event' => new Event(['status' => 'draft', 'type' => 'ppl', 'mode' => 'offline', 'audience' => 'publik', 'fee_member' => 0, 'fee_public' => 0]),
+            'organizations' => $this->organizationOptions($request),
         ]);
+    }
+
+    public function store(Request $request)
+    {
+        $event = Event::create($this->validated($request));
+
+        return redirect()->route('event.show', $event)->with('success', 'Event dibuat.');
+    }
+
+    public function show(Event $event)
+    {
+        $event->load('organization')->loadCount([
+            'participants as pending_count' => fn ($q) => $q->where('status', 'pending'),
+            'participants as verified_count' => fn ($q) => $q->where('status', 'verified'),
+            'participants as attended_count' => fn ($q) => $q->where('status', 'verified')->whereNotNull('attended_at'),
+        ]);
+        $certificates = \App\Models\Certificate::whereHas('participant', fn ($q) => $q->where('event_id', $event->id))
+            ->selectRaw('COUNT(*) as total, SUM(issued_at IS NOT NULL AND revoked_at IS NULL) as issued')->first();
+
+        return view('dashboard.event.show', compact('event', 'certificates'));
+    }
+
+    public function edit(Request $request, Event $event)
+    {
+        return view('dashboard.event.form', ['event' => $event, 'organizations' => $this->organizationOptions($request)]);
+    }
+
+    public function update(Request $request, Event $event)
+    {
+        $event->update($this->validated($request, $event)); // slug tetap
+
+        return redirect()->route('event.show', $event)->with('success', 'Event diubah.');
+    }
+
+    public function destroy(Event $event)
+    {
+        $event->delete(); // soft delete: peserta & sertifikat tetap bisa diverifikasi
+        session()->flash('success', 'Event diarsipkan.');
+
+        return response()->noContent();
+    }
+
+    /** Duplikasi event (PRD 8.9 fitur admin): salin pengaturan, tanpa peserta, status draf. */
+    public function duplicate(Event $event)
+    {
+        $this->authorize('create', Event::class);
+        $this->authorize('view', $event);
+        $copy = $event->replicate(['slug', 'code', 'status']);
+        $copy->title = $event->title . ' (salinan)';
+        $copy->code = $this->generateCode($event->type);
+        $copy->status = 'draft';
+        $copy->save();
+
+        return redirect()->route('event.edit', $copy)->with('success', 'Event disalin sebagai draf. Sesuaikan judul & jadwal.');
+    }
+
+    /** Terbitkan sertifikat untuk semua peserta hadir (PRD 8.9 alur 7) — lewat queue. */
+    public function issueCertificates(Event $event)
+    {
+        $this->authorize('update', $event);
+        abort_unless($event->status === 'done', 422, 'Sertifikat hanya bisa diterbitkan setelah event berstatus Selesai.');
+        IssueEventCertificates::dispatch($event);
+
+        return back()->with('success', 'Penerbitan sertifikat sedang diproses di latar belakang. Peserta menerima email saat sertifikatnya siap.');
+    }
+
+    private function validated(Request $request, ?Event $event = null): array
+    {
+        $allowed = array_keys($this->organizationOptions($request)->all());
+        $data = $request->validate([
+            'organization_id' => ['required', Rule::in($allowed)],
+            'title' => 'required|string|max:300',
+            'body' => 'required|string',
+            'type' => ['required', Rule::in(array_keys(Event::TYPES))],
+            'code' => ['nullable', 'alpha_dash', 'max:20', Rule::unique('events')->ignore($event)],
+            'mode' => ['required', Rule::in(array_keys(Event::MODES))],
+            'location' => 'nullable|string|max:255',
+            'meeting_url' => 'nullable|url|max:255',
+            'starts_at' => 'required|date',
+            'ends_at' => 'required|date|after_or_equal:starts_at',
+            'registration_opens_at' => 'nullable|date',
+            'registration_closes_at' => 'nullable|date|after_or_equal:registration_opens_at',
+            'quota' => 'nullable|integer|min:1',
+            'audience' => ['required', Rule::in(array_keys(Event::AUDIENCES))],
+            'fee_member' => 'required|numeric|min:0',
+            'fee_public' => 'required|numeric|min:0',
+            'skp_hours' => 'nullable|numeric|min:0|max:999',
+            'status' => ['required', Rule::in(array_keys(Event::STATUSES))],
+            'thumbnail' => 'nullable|' . Upload::IMAGE_RULE,
+            'certificate_template' => 'nullable|' . Upload::IMAGE_RULE,
+            'signatories' => 'nullable|array|max:2',
+            'signatories.*.name' => 'nullable|string|max:100',
+            'signatories.*.title' => 'nullable|string|max:100',
+            'signatures' => 'nullable|array|max:2',
+            'signatures.*' => 'nullable|image|mimes:png,webp|max:1024',
+        ]);
+        $data['body'] = Html::clean($data['body']);
+        $data['code'] = strtoupper($data['code'] ?? '') ?: ($event?->code ?? $this->generateCode($data['type']));
+
+        foreach (['thumbnail' => 'event', 'certificate_template' => 'event/certificates'] as $field => $dir) {
+            unset($data[$field]);
+            if ($request->hasFile($field)) {
+                $data[$field] = Upload::store($request->file($field), $dir, $event?->{$field}, $field === 'certificate_template' ? 3508 : 1920);
+            }
+        }
+
+        // penandatangan maks. 2 (PRD 8.9): nama, jabatan, gambar tanda tangan (png transparan)
+        $old = $event?->certificate_signatory ?? [];
+        $data['certificate_signatory'] = collect([0, 1])->map(function ($i) use ($request, $old) {
+            $signature = $old[$i]['signature'] ?? null;
+            if ($request->hasFile("signatures.{$i}")) {
+                $signature = Upload::store($request->file("signatures.{$i}"), 'event/signatures', $signature, 800);
+            }
+
+            return ['name' => $request->input("signatories.{$i}.name"), 'title' => $request->input("signatories.{$i}.title"), 'signature' => $signature];
+        })->filter(fn ($s) => filled($s['name']))->values()->all();
+        unset($data['signatories'], $data['signatures']);
+
+        return $data;
+    }
+
+    private function generateCode(string $type): string
+    {
+        $prefix = strtoupper(Str::before(str_replace('brevet_', 'BRV', $type), '_')) ?: 'EV';
+        do {
+            $code = substr($prefix, 0, 4) . now()->format('ym') . strtoupper(Str::random(3));
+        } while (Event::withTrashed()->where('code', $code)->exists());
+
+        return $code;
+    }
+
+    private function organizationOptions(Request $request)
+    {
+        $ids = $request->user()->scopedOrganizationIds();
+
+        return Organization::inActiveRegion()->when($ids !== null, fn ($q) => $q->whereIn('id', $ids))
+            ->orderByRaw("type = 'pc'")->orderBy('name')->pluck('name', 'id');
     }
 }

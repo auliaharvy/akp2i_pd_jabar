@@ -122,6 +122,6 @@ class GalleryController extends Controller
 
     private function events()
     {
-        return Event::orderByDesc('date_start')->limit(100)->pluck('title', 'id');
+        return Event::orderByDesc('starts_at')->limit(100)->pluck('title', 'id');
     }
 }

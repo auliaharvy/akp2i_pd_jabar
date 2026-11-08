@@ -40,13 +40,17 @@ class ProfileController extends Controller
         $date_of_birth->settings(['formatFunction' => 'translatedFormat']);
         $date_of_birth->format('j F Y');
 
+        // 8.11: Pelatihan (event diikuti, sertifikat, jam PPL)
+        $participations = $user->participants()->with('event', 'certificateRecord')->latest()->get();
+        $pplHours = $user->pplHoursByYear();
+
         // 8.11: Tulisan saya
         $writings = [
             'blogs' => $user->blogs()->latest()->take(20)->get(),
             'threads' => $user->threads()->latest()->take(20)->get(),
         ];
 
-        return view('dashboard.profile.index', compact('user', 'counter', 'date_of_birth', 'member', 'writings'));
+        return view('dashboard.profile.index', compact('user', 'counter', 'date_of_birth', 'member', 'writings', 'participations', 'pplHours'));
     }
 
     /**
@@ -124,26 +128,4 @@ class ProfileController extends Controller
         return redirect()->route('profile.index')->with('success', 'Password berhasil diubah.');
     }
 
-    /**
-     * Yajra datatable
-     */
-    public function datatable(Request $request)
-    {
-        $user_id = Auth::User()->id;
-
-        if ($request->ajax()) {
-            $participants = Participant::select('participants.*')->with('event')->where([
-                ['user_id', '=', $user_id],
-                ['certificate', '!=', NULL]
-            ]);
-
-            return DataTables::eloquent($participants)
-            ->addColumn('action', function ($participant) {
-                return view('dashboard.profile.action', compact('participant'))->render();
-            })
-            ->rawColumns(['action'])
-            ->addIndexColumn()
-            ->make(true);
-        }
-    }
 }

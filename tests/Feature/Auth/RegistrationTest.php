@@ -10,12 +10,6 @@ class RegistrationTest extends TestCase
 {
     use RefreshDatabase;
 
-    protected function setUp(): void
-    {
-        parent::setUp();
-        $this->markTestSkipped('Route dimatikan di routes/auth.php; diaktifkan saat registrasi umum (PRD 8.10).');
-    }
-
     public function test_registration_screen_can_be_rendered()
     {
         $response = $this->get('/register');

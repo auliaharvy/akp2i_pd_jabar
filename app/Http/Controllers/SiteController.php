@@ -38,6 +38,7 @@ class SiteController extends Controller
     public function home()
     {
         $data = Cache::remember('site.home', 600, fn () => [
+            'events' => Event::public()->where('status', '!=', 'done')->where('ends_at', '>=', now())->oldest('starts_at')->take(3)->get(),
             'news' => Blog::published()->with('user', 'category')->latest('published_at')->take(3)->get(),
             'sliders' => Slider::where('is_active', true)->orderBy('sort_order')->get(),
             'welcome' => Page::where('slug', 'sambutan')->where('is_published', true)->first(),
@@ -54,8 +55,7 @@ class SiteController extends Controller
             'members' => Member::where('status', 'aktif')->count(),
             'licensed' => Member::where('status', 'aktif')->where('membership_type', 'utama')->count(),
             'branches' => Organization::pc()->inActiveRegion()->where('is_active', true)->count(),
-            // shortcut: event_status 0 = "terlaksana" di skema lama; diganti status `done` di M4
-            'events' => Event::where('event_status', 0)->count(),
+            'events' => Event::where('status', 'done')->count(),
         ]);
     }
 
@@ -192,19 +192,14 @@ class SiteController extends Controller
         return redirect()->route('site.contact')->with('success', 'Terima kasih, pesan Anda sudah kami terima. Sekretariat akan membalas melalui email.');
     }
 
-    /** Halaman yang isinya menyusul di M3/M4 (PRD 12: tampil empty state dulu). */
-    public function comingSoon(Request $request)
-    {
-        return view('site.coming-soon', $request->route()->defaults);
-    }
-
     public function sitemap()
     {
-        $urls = collect(['site.home', 'site.news', 'site.forum', 'site.journal', 'site.profile', 'site.board', 'site.branches', 'site.gallery', 'site.documents',
+        $urls = collect(['site.home', 'site.news', 'site.training', 'site.forum', 'site.journal', 'site.profile', 'site.board', 'site.branches', 'site.gallery', 'site.documents',
             'site.membership', 'site.membership.services', 'site.membership.check', 'site.contact', 'site.privacy', 'site.terms'])
             ->map(fn ($route) => ['loc' => route($route), 'lastmod' => null])
             ->merge(Organization::pc()->inActiveRegion()->where('is_active', true)->get()->map(fn ($o) => ['loc' => route('site.branch', $o->slug), 'lastmod' => $o->updated_at]))
             ->merge(Gallery::published()->get()->map(fn ($g) => ['loc' => route('site.gallery.show', $g->slug), 'lastmod' => $g->updated_at]))
+            ->merge(Event::public()->get(['slug', 'updated_at'])->map(fn ($e) => ['loc' => route('site.training.show', $e->slug), 'lastmod' => $e->updated_at]))
             ->merge(Blog::published()->get(['slug', 'updated_at'])->map(fn ($b) => ['loc' => route('site.news.show', $b->slug), 'lastmod' => $b->updated_at]))
             ->merge(Research::published()->get(['slug', 'updated_at'])->map(fn ($r) => ['loc' => route('site.journal.show', $r->slug), 'lastmod' => $r->updated_at]))
             ->merge(Thread::published()->get(['slug', 'updated_at'])->map(fn ($t) => ['loc' => route('site.forum.show', $t->slug), 'lastmod' => $t->updated_at]));

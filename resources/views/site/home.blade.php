@@ -41,7 +41,11 @@
                 <x-site.section-heading eyebrow="Pusat Pelatihan" title="Event Mendatang" description="PPL, Brevet Pajak, seminar, dan webinar." class="mb-0" />
                 <a href="{{ route('site.training') }}" class="inline-flex items-center gap-1 font-semibold text-brand-secondary">Semua event <x-site.icon name="arrow-right" class="h-4 w-4" /></a>
             </div>
-            <x-site.empty-state title="Jadwal pelatihan segera hadir" icon="calendar" class="mt-8">Pendaftaran event online sedang disiapkan.</x-site.empty-state>
+            @if ($events->isEmpty())
+                <x-site.empty-state title="Belum ada jadwal pelatihan" icon="calendar" class="mt-8" />
+            @else
+                <div class="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">@foreach ($events as $event)<x-site.card-event :event="$event" />@endforeach</div>
+            @endif
         </div>
     </section>
 
