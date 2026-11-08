@@ -254,13 +254,13 @@ class UserSeeder extends Seeder
         $userSuperadministrator = User::factory()->create([
             'name' => 'Super Administrator',
             'gender' => 'L',
-            'birthplace' => 'Palu',
+            'birthplace' => 'Bandung',
             'date_of_birth' => now(),
 
             'phone_number' => '01234678901',
             'email' => 'superadmin@mail.com',
             'password' => Hash::make('password'),
-            'address' => 'Palu',
+            'address' => 'Bandung',
 
             'division_id' => null,
             'position_id' => null,
@@ -269,13 +269,13 @@ class UserSeeder extends Seeder
         $userAdministrator = User::factory()->create([
             'name' => 'Administrator',
             'gender' => 'L',
-            'birthplace' => 'Palu',
+            'birthplace' => 'Bandung',
             'date_of_birth' => now(),
 
             'phone_number' => '01234678902',
             'email' => 'admin@mail.com',
             'password' => Hash::make('password'),
-            'address' => 'Palu',
+            'address' => 'Bandung',
 
             'division_id' => null,
             'position_id' => null,
@@ -284,13 +284,13 @@ class UserSeeder extends Seeder
         $userMember = User::factory()->create([
             'name' => 'Member',
             'gender' => 'L',
-            'birthplace' => 'Palu',
+            'birthplace' => 'Bandung',
             'date_of_birth' => now(),
 
             'phone_number' => '01234678903',
             'email' => 'member@mail.com',
             'password' => Hash::make('password'),
-            'address' => 'Palu',
+            'address' => 'Bandung',
 
             'division_id' => null,
             'position_id' => null,
@@ -299,13 +299,13 @@ class UserSeeder extends Seeder
         $userGeneral = User::factory()->create([
             'name' => 'General',
             'gender' => 'L',
-            'birthplace' => 'Palu',
+            'birthplace' => 'Bandung',
             'date_of_birth' => now(),
 
             'phone_number' => '01234678904',
             'email' => 'general@mail.com',
             'password' => Hash::make('password'),
-            'address' => 'Palu',
+            'address' => 'Bandung',
 
             'division_id' => null,
             'position_id' => null

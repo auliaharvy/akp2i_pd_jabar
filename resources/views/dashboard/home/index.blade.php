@@ -26,8 +26,7 @@
                     <div class="card-header border-0 pt-8 pb-4">
                         <div class="d-flex flex-column me-2">
                             <span class="text-dark fw-bolder fs-3">Aktivitas</span>
-                            <span class="text-muted fw-bold mt-1">Jumlah aktivitas di aplikasi Bara Asa
-                                Project.</span>
+                            <span class="text-muted fw-bold mt-1">Jumlah aktivitas di aplikasi {{ config('app.name') }}.</span>
                         </div>
                         <div class="card-toolbar">
                             <button type="button" class="btn btn-sm btn-icon btn-color-primary btn-active-light-primary"
@@ -211,7 +210,7 @@
                 <div class="card-px text-center">
                     <h2 class="fs-2x fw-bolder mb-10">Selamat Datang!</h2>
                     <p class="text-gray-400 fs-4 fw-bold">
-                        Dasbor Bara Asa Project adalah alat manajemen yang digunakan untuk melacak, menganalisis, dan
+                        Dasbor {{ config('app.name') }} adalah alat manajemen yang digunakan untuk melacak, menganalisis, dan
                         menampilkan akun beserta data-datanya.
                     </p>
                 </div>

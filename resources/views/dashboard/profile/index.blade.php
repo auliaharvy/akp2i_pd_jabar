@@ -149,7 +149,7 @@
                                 <div class="card-title flex-column">
                                     <h2 class="mb-1">Aktivitas Pengguna</h2>
                                     <div class="fs-6 fw-bold text-muted">Jumlah aktivitas di
-                                        aplikasi Bara Asa Project.</div>
+                                        aplikasi {{ config('app.name') }}.</div>
                                 </div>
                             </div>
 
@@ -252,7 +252,7 @@
                                 <div class="card-title flex-column">
                                     <h2 class="mb-1">Sertifikat</h2>
                                     <div class="fs-6 fw-bold text-muted">Sertifikat diberikan setelah
-                                        mengikuti acara di Bara Asa Project.</div>
+                                        mengikuti acara di {{ config('app.name') }}.</div>
                                 </div>
                             </div>
 

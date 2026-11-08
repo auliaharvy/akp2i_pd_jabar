@@ -7,7 +7,7 @@
     {{ $meta ?? null }}
     {{-- End::Meta slot --}}
 
-    <title>Bara Asa Project | {{ $title }}</title>
+    <title>{{ config('app.name') }} | {{ $title }}</title>
 
     {{-- Start::Style slot --}}
     <x-dashboard.head.style />
@@ -33,8 +33,8 @@
                             </span>
                         </div>
                         <a href="{{ route('home') }}">
-                            <img alt="Logo" src="{{ asset('media/logos/headerlogo.png') }}" class="d-none d-lg-inline h-60px" />
-                            <img alt="Logo" src="{{ asset('media/logos/headerlogo.png') }}" class="d-lg-none h-25px" />
+                            <img alt="Logo" src="{{ asset('media/logos/akp2i-jabar.svg') }}" class="d-none d-lg-inline h-60px" />
+                            <img alt="Logo" src="{{ asset('media/logos/akp2i-jabar.svg') }}" class="d-lg-none h-25px" />
                         </a>
                     </div>
 

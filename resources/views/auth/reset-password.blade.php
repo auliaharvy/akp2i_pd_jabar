@@ -1,16 +1,16 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id">
 <!--begin::Head-->
 
 <head>
-    <title>Reset Password | Bara Asa Project</title>
+    <title>Reset Password | {{ config('app.name') }}</title>
     <meta charset="utf-8" />
-    <meta name="description" content="Platform Non-Profit Untuk Pengembangan Diri Anak Muda Di Kota Palu" />
-    <meta name="keywords" content="Bara Asa Project, self-development, anak muda, kota palu, sulawesi tengah, soft-skill" />
+    <meta name="description" content="Website dan aplikasi Pengurus Daerah Asosiasi Konsultan Pajak Publik Indonesia (AKP2I) Jawa Barat" />
+    <meta name="keywords" content="AKP2I, AKP2I Jawa Barat, konsultan pajak, PPL, brevet pajak, Jawa Barat" />
     <meta name="viewport" content="width= device-width, initial-scale=1, shrink-to-fit=no" />
     <meta property="og:locale" content="id, in" />
-    <meta property="og:site_name" content="Bara Asa Project" />
-    <link rel="shortcut icon" href="{{ asset('media/logos/baraasa.png') }}" />
+    <meta property="og:site_name" content="{{ config('app.name') }}" />
+    <link rel="shortcut icon" href="{{ asset('media/logos/akp2i-jabar.svg') }}" />
     <!--begin::Fonts-->
     <link rel="preconnect" href="https://fonts.gstatic.com">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Poppins:300,400,500,600,700" />
@@ -32,7 +32,7 @@
             <div class="d-flex flex-center flex-column flex-column-fluid p-10 pb-lg-20">
                 <!--begin::Logo-->
                 <a href="#" class="mb-12">
-                    <img alt="Logo" src="{{ asset('media/logos/authlogo.png') }}" class="h-100px" />
+                    <img alt="Logo" src="{{ asset('media/logos/akp2i-jabar.svg') }}" class="h-100px" />
                 </a>
                 <!--end::Logo-->
                 <!--begin::Wrapper-->
