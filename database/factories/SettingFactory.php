@@ -26,9 +26,6 @@ class SettingFactory extends Factory
             'phone' => $this->faker->phoneNumber,
             'address' => $this->faker->address,
             'instagram' => 'https://www.instagram.com/akp2i.jabar/',
-            'spotify' => 'https://open.spotify.com/show/7ill8y7DsenVbgk41o6Oi5?si=0e50d2789341459e',
-            'recruitment_status' => "Ditutup",
-            'recruitment_thumbnail' => $this->faker->name,
         ];
     }
 }

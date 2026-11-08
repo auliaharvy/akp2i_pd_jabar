@@ -23,7 +23,6 @@ class DatabaseSeeder extends Seeder
             CommentSeeder::class,
             EventSeeder::class,
             ParticipantSeeder::class,
-            RecruitmentSeeder::class,
             SettingSeeder::class
         ]);
     }

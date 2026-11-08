@@ -66,11 +66,6 @@ class UserSeeder extends Seeder
             'participant-update',
             'participant-delete',
 
-            'recruitment-view',
-            'recruitment-create',
-            'recruitment-update',
-            'recruitment-delete',
-
             'member-view',
             'member-create',
             'member-update',
@@ -153,11 +148,6 @@ class UserSeeder extends Seeder
             'participant-update',
             'participant-delete',
 
-            'recruitment-view',
-            'recruitment-create',
-            'recruitment-update',
-            'recruitment-delete',
-
             'member-view',
             'member-create',
             'member-update',
@@ -211,8 +201,6 @@ class UserSeeder extends Seeder
             'event-view',
 
             'participant-view',
-
-            'recruitment-view',
 
             'member-view',
 

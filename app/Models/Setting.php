@@ -13,9 +13,6 @@ class Setting extends Model
         'email',
         'phone',
         'address',
-        'instagram',
-        'spotify',
-        'recruitment_status',
-        'recruitment_thumbnail'
+        'instagram'
     ];
 }

@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Models\Setting;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
 
 class SettingController extends Controller
 {
@@ -80,32 +79,12 @@ class SettingController extends Controller
             'phone' => 'required|string|max:255',
             'address' => 'required|string',
             'instagram' => 'required|string',
-            'spotify' => 'required|string',
-            'recruitment_status' => 'required|string',
         ]);
-
-        if ($request->hasFile('recruitment_thumbnail')) {
-            $request->validate([
-                'recruitment_thumbnail' => 'required|file|max:2000|mimes:jpeg,jpg,png'
-            ]);
-
-            if (Storage::exists('public/setting/' . $setting->recruitment_thumbnail)) {
-                Storage::delete('public/setting/' . $setting->recruitment_thumbnail);
-            }
-
-            $photoFile = $request->file('recruitment_thumbnail');
-            $photoName = $photoFile->hashName();
-            Storage::putFileAs('public/setting', $photoFile, $photoName);
-
-            $setting->recruitment_thumbnail = $photoName;
-        }
 
         $setting->email = $request->input('email');
         $setting->phone = $request->input('phone');
         $setting->address = $request->input('address');
         $setting->instagram = $request->input('instagram');
-        $setting->spotify = $request->input('spotify');
-        $setting->recruitment_status = $request->input('recruitment_status');
         $setting->save();
 
         return redirect()->route('setting.edit', '1')->with('success', 'Pengaturan telah diubah.');

@@ -11,7 +11,6 @@ use App\Http\Controllers\MemberController;
 use App\Http\Controllers\ParticipantController;
 use App\Http\Controllers\PositionController;
 use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\RecruitmentController;
 use App\Http\Controllers\ResearchController;
 use App\Http\Controllers\SettingController;
 use App\Http\Controllers\ThreadController;
@@ -66,11 +65,6 @@ Route::middleware('auth:sanctum')->prefix('dashboard')->group(function () {
     Route::patch('participant/certificate/{participant}', [ParticipantController::class, 'certificate'])->name('participant.certificate');
     Route::get('participant-select2-event', [ParticipantController::class, 'select2_event'])->name('participant.select2-event');
     Route::get('participant-select2-user', [ParticipantController::class, 'select2_user'])->name('participant.select2-user');
-
-    # Perekrutan
-    Route::resource('recruitment', RecruitmentController::class);
-    Route::get('recruitment-datatable', [RecruitmentController::class, 'datatable'])->name('recruitment.datatable');
-    Route::get('recruitment-select2-user', [RecruitmentController::class, 'select2_user'])->name('recruitment.select2-user');
 
     /*
     |--------------------------------------------------------

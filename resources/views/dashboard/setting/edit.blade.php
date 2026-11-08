@@ -67,23 +67,6 @@
                         <input class="form-control" type="text" name="instagram" value="{{ $setting->instagram }}"
                             required>
                     </div>
-                    <div class="mb-6">
-                        <label class="form-label required">Spotify (Link)</label>
-                        <input class="form-control" type="text" name="spotify" value="{{ $setting->spotify }}" required>
-                    </div>
-                    <div class="mb-6">
-                        <label class="form-label">Status Perekrutan</label>
-                        <select class="form-select" name="recruitment_status" required>
-                            <option value="Dibuka" {{ $setting->recruitment_status == 'Dibuka' ? 'selected' : ''
-                                }}>Dibuka</option>
-                            <option value="Ditutup" {{ $setting->recruitment_status == 'Ditutup' ? 'selected' : ''
-                                }}>Ditutup</option>
-                        </select>
-                    </div>
-                    <div class="mb-6">
-                        <label class="form-label">Thumbnail Perekrutan</label>
-                        <input class="form-control" type="file" name="recruitment_thumbnail">
-                    </div>
                 </div>
 
                 <div class="card-footer d-flex justify-content-end py-6">

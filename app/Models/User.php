@@ -73,12 +73,6 @@ class User extends Authenticatable
     {
         return $this->hasMany(Participant::class);
     }
-
-    public function recruitments()
-    {
-        return $this->hasOne(Recruitment::class);
-    }
-
     public function division()
     {
         return $this->belongsTo(Division::class);
