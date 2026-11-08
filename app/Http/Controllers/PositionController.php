@@ -18,6 +18,7 @@ class PositionController extends Controller
         $this->middleware(['permission:position-create'])->only(['create', 'store']);
         $this->middleware(['permission:position-update'])->only(['edit', 'update']);
         $this->middleware(['permission:position-delete'])->only(['destroy']);
+        $this->authorizeResource(Position::class, 'position');
     }
 
     /**

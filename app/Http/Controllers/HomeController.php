@@ -21,8 +21,8 @@ class HomeController extends Controller
             'user' => User::select('id')->count()
         ];
 
-        $members = User::select('id')->role(['super_administrator','administrator','member'])->get();
-        $generals = User::select('id')->role('general')->get();
+        $members = User::select('id')->role(['super_administrator','admin_pd','anggota'])->get();
+        $generals = User::select('id')->role('umum')->get();
         $userRoles = [
             'member' => $members->count(),
             'general' => $generals->count()

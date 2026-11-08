@@ -54,16 +54,15 @@
                     </div>
                     <div class="mb-6">
                         <label class="form-label">Status Publikasi</label>
-                        @if (Auth::user()->hasAnyRole('super_administrator|administrator'))
+                        @if (Auth::user()->can('publish', App\Models\Blog::class))
                         <select class="form-select" name="publication_status" required>
                             <option value="0">Belum Terbit</option>
                             <option value="1" selected>Telah Terbit</option>
                         </select>
                         @else
                         <select class="form-select" required disabled>
-                            <option value="1" selected>Telah Terbit</option>
+                            <option selected>Menunggu Review</option>
                         </select>
-                        <input class="form-control" type="text" name="publication_status" value="1" required hidden>
                         @endif
                     </div>
                     <div class="mb-7">

@@ -17,6 +17,7 @@ class ResearchController extends Controller
         $this->middleware(['permission:research-create'])->only(['create', 'store']);
         $this->middleware(['permission:research-update'])->only(['edit', 'update']);
         $this->middleware(['permission:research-delete'])->only(['destroy']);
+        $this->authorizeResource(Research::class, 'research');
     }
 
     /**

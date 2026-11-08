@@ -35,15 +35,7 @@
                             <a href="#" class="fw-bold text-muted text-hover-primary fs-7 my-2">{{ Auth::user()->email
                                 }}</a>
 
-                            @if (Auth::user()->hasRole('super_administrator'))
-                            <span class="badge badge-light-primary fw-bolder fs-7">Super Administrator</span>
-                            @elseif (Auth::user()->hasRole('administrator'))
-                            <span class="badge badge-light-success fw-bolder fs-7">Administrator</span>
-                            @elseif (Auth::user()->hasRole('member'))
-                            <span class="badge badge-light-warning fw-bolder fs-7">Anggota</span>
-                            @elseif (Auth::user()->hasRole('general'))
-                            <span class="badge badge-light-danger fw-bolder fs-7">Umum</span>
-                            @endif
+                            <x-dashboard.role-badge :user="Auth::user()" class="fw-bolder fs-7" />
                         </div>
 
                     </div>

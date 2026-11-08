@@ -20,6 +20,7 @@ class ParticipantController extends Controller
         $this->middleware(['permission:participant-create'])->only(['create', 'store']);
         $this->middleware(['permission:participant-update'])->only(['edit', 'update', 'certificate']);
         $this->middleware(['permission:participant-delete'])->only(['destroy']);
+        $this->authorizeResource(Participant::class, 'participant');
     }
 
     /**
@@ -211,17 +212,19 @@ class ParticipantController extends Controller
                     ->where('name', 'LIKE', '%' . $q . '%')
                     ->role([
                         'super_administrator',
-                        'administrator',
-                        'member',
-                        'general'
+                        'admin_pd',
+                        'anggota',
+                        'umum'
                     ])->get();
             } else {
                 $assets = User::select('id', 'name')
                     ->where('name', 'LIKE', '%' . $q . '%')
                     ->role([
-                        'administrator',
-                        'member',
-                        'general'
+                        'admin_pd',
+                        'editor',
+                        'admin_pc',
+                        'anggota',
+                        'umum'
                     ])->get();
             }
             return response()->json($assets, 200);

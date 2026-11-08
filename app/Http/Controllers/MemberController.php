@@ -16,16 +16,18 @@ use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\Rule;
 use Yajra\DataTables\Facades\DataTables;
 
 class MemberController extends Controller
 {
     public function __construct()
     {
-        $this->middleware(['permission:member-view'])->only(['index', 'show', 'datatable']);
-        $this->middleware(['permission:member-create'])->only(['create', 'store', 'general', 'getGeneral', 'generalAssign']);
-        $this->middleware(['permission:member-update'])->only(['edit', 'update']);
-        $this->middleware(['permission:member-delete'])->only(['destroy']);
+        $this->middleware(['permission:user-view'])->only(['index', 'show', 'datatable']);
+        $this->middleware(['permission:user-create'])->only(['create', 'store', 'general', 'getGeneral', 'generalAssign', 'select2_user']);
+        $this->middleware(['permission:user-update'])->only(['edit', 'update']);
+        $this->middleware(['permission:user-delete'])->only(['destroy']);
+        $this->authorizeResource(User::class, 'member');
     }
 
     /**
@@ -61,7 +63,7 @@ class MemberController extends Controller
             'email' => 'required|email|unique:users,email',
             'password' => 'required|string|min:8|max:255',
             'password_confirm' => 'same:password',
-            'role' => 'required|in:administrator,member',
+            'role' => ['required', Rule::in($request->user()->assignableRoles())],
             'photo' => 'required|file|max:2048|mimes:jpeg,jpg,png,webp'
         ]);
         $photoFile = $request->file('photo');
@@ -124,14 +126,6 @@ class MemberController extends Controller
         $date_of_birth->settings(['formatFunction' => 'translatedFormat']);
         $date_of_birth->format('j F Y');
 
-        if (Auth::user()->hasRole('administrator')) {
-            if ($member->hasAnyRole('super_administrator|administrator')) {
-                return redirect()->route('member.index')->with('warning', 'Anda tidak memiliki akses untuk mengubah anggota tersebut.');
-            } else {
-                return view('dashboard.member.edit', compact('member', 'date_of_birth'));
-            }
-        }
-
         if ($member->hasRole('super_administrator')) {
             return redirect()->route('member.index')->with('warning', 'Tidak dapat mengubah anggota dengan hak akses super administrator');
         } else {
@@ -148,12 +142,15 @@ class MemberController extends Controller
      */
     public function update(Request $request, User $member)
     {
+        // super admin hanya diubah lewat menu Administrator (SA lolos policy via Gate::before)
+        abort_if($member->hasRole('super_administrator'), 403);
+
         $this->validate_request($request);
         $request->validate([
             'email' => 'required|email|unique:users,email,' . $member->id,
             'password' => 'nullable|string|min:8|max:255',
             'password_confirm' => 'same:password',
-            'role' => 'required|in:administrator,member,general',
+            'role' => ['required', Rule::in($request->user()->assignableRoles())],
         ]);
 
         if ($request->hasFile('photo')) {
@@ -175,7 +172,7 @@ class MemberController extends Controller
             $member->password = Hash::make($request->input('password'));
         }
 
-        if ($request->input('role') == 'general') {
+        if ($request->input('role') == 'umum') {
             $member->division_id = null;
             $member->position_id = null;
         } else {
@@ -194,7 +191,7 @@ class MemberController extends Controller
 
         $member->syncRoles($request->input('role'));
 
-        if ($request->input('role') == 'general') {
+        if ($request->input('role') == 'umum') {
             return redirect()->route('member.index')->with('warning', $request->input('name') . ' dihapus dari anggota.');
         } else {
             return redirect()->route('member.edit', $member->id)->with('success', 'Informasi anggota telah diubah.');
@@ -220,13 +217,14 @@ class MemberController extends Controller
     public function generalAssign(Request $request)
     {
         $request->validate([
-            'user_id' => 'required|numeric',
+            'user_id' => 'required|exists:users,id',
             'division_id' => 'required|numeric',
             'position_id' => 'required|numeric',
-            'role' => 'required|in:administrator,member'
+            'role' => ['required', Rule::in($request->user()->assignableRoles())],
         ]);
 
-        $member = User::where('id', '=', $request->input('user_id'))->first();
+        // B4: hanya akun umum yang bisa dinaikkan dari halaman ini
+        $member = User::role('umum')->findOrFail($request->input('user_id'));
 
         $member->division_id = $request->input('division_id');
         $member->position_id = $request->input('position_id');
@@ -245,7 +243,7 @@ class MemberController extends Controller
      */
     public function destroy(User $member)
     {
-        if ($member->hasanyrole('administrator|member')) {
+        if ($member->hasanyrole('admin_pd|anggota')) {
             Session::flash('success', 'Pengguna ' . $member->name . ' telah dihapus.');
 
             if (Storage::exists('public/user/' . $member->photo)) {
@@ -267,8 +265,10 @@ class MemberController extends Controller
             $members = User::with('division', 'position')
                 ->role([
                     'super_administrator',
-                    'administrator',
-                    'member'
+                    'admin_pd',
+                    'editor',
+                    'admin_pc',
+                    'anggota'
                 ]);
 
             return DataTables::eloquent($members)
@@ -295,7 +295,7 @@ class MemberController extends Controller
             $assets = User::select('id', 'name')
                 ->where('name', 'LIKE', '%' . $q . '%')
                 ->role([
-                    'general'
+                    'umum'
                 ])->get();
 
             return response()->json($assets, 200);

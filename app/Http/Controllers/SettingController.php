@@ -9,7 +9,8 @@ class SettingController extends Controller
 {
     public function __construct()
     {
-        $this->middleware(['role:super_administrator|administrator']);
+        $this->middleware(['role:super_administrator|admin_pd']);
+        $this->authorizeResource(Setting::class, 'setting');
     }
 
     /**

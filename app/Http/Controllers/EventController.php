@@ -21,6 +21,7 @@ class EventController extends Controller
         $this->middleware(['permission:event-create'])->only(['create', 'store', 'participant']);
         $this->middleware(['permission:event-update'])->only(['edit', 'update']);
         $this->middleware(['permission:event-delete'])->only(['destroy']);
+        $this->authorizeResource(Event::class, 'event');
     }
 
     /**
@@ -235,17 +236,19 @@ class EventController extends Controller
                     ->where('name', 'LIKE', '%' . $q . '%')
                     ->role([
                         'super_administrator',
-                        'administrator',
-                        'member',
-                        'general'
+                        'admin_pd',
+                        'anggota',
+                        'umum'
                     ])->get();
             } else {
                 $assets = User::select('id', 'name')
                     ->where('name', 'LIKE', '%' . $q . '%')
                     ->role([
-                        'administrator',
-                        'member',
-                        'general'
+                        'admin_pd',
+                        'editor',
+                        'admin_pc',
+                        'anggota',
+                        'umum'
                     ])->get();
             }
             return response()->json($assets, 200);

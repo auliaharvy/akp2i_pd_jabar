@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use Illuminate\Validation\Rule;
 use Illuminate\Http\Request;
 use Yajra\DataTables\Facades\DataTables;
 
@@ -11,6 +12,7 @@ class AdministratorController extends Controller
     public function __construct()
     {
         $this->middleware(['role:super_administrator']);
+        $this->authorizeResource(User::class, 'administrator');
     }
 
     /**
@@ -32,7 +34,7 @@ class AdministratorController extends Controller
     {
         if ($request->ajax()) {
             $administrators = User::with('division', 'position')
-                ->role(['member']);
+                ->role(['anggota']);
 
             return DataTables::eloquent($administrators)
                 ->addColumn('role', function ($administrator) {
@@ -92,13 +94,13 @@ class AdministratorController extends Controller
     public function update(Request $request, User $administrator)
     {
         $request->validate([
-            'role' => 'required|in:super_administrator,administrator,member'
+            'role' => ['required', Rule::in(array_keys(config('akp2i.roles')))]
         ]);
 
         if ($request->input('role') == 'super_administrator') {
             $superadmin = User::with('division', 'position')->role(['super_administrator'])->get();
             $limit = $superadmin->count();
-            if ($limit >= 5) {
+            if ($limit >= config('akp2i.max_super_admins') && ! $administrator->hasRole('super_administrator')) {
                 return redirect()->route('administrator.index')->with('warning', 'Jumlah super administrator tidak dapat melebihi batas (5).');
             } else {
                 $administrator->syncRoles($request->input('role'));
@@ -130,7 +132,7 @@ class AdministratorController extends Controller
             $administrators = User::with('division', 'position')
                 ->role([
                     'super_administrator',
-                    'administrator'
+                    'admin_pd'
                 ]);
 
             return DataTables::eloquent($administrators)

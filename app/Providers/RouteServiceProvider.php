@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Models\User;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Foundation\Support\Providers\RouteServiceProvider as ServiceProvider;
 use Illuminate\Http\Request;
@@ -36,6 +37,10 @@ class RouteServiceProvider extends ServiceProvider
     public function boot()
     {
         $this->configureRateLimiting();
+
+        // B4: halaman Umum hanya bisa membuka akun umum, halaman Anggota hanya akun non-umum
+        Route::bind('general', fn ($id) => User::role('umum')->findOrFail($id));
+        Route::bind('member', fn ($id) => User::role(['super_administrator', 'admin_pd', 'editor', 'admin_pc', 'anggota'])->findOrFail($id));
 
         $this->routes(function () {
             Route::prefix('api')

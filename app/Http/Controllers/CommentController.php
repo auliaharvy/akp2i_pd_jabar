@@ -9,6 +9,14 @@ use Illuminate\Support\Facades\Auth;
 
 class CommentController extends Controller
 {
+    public function __construct()
+    {
+        // B3: sebelumnya tanpa cek akses sama sekali
+        $this->middleware(['permission:comment-update'])->only(['edit', 'update']);
+        $this->middleware(['permission:comment-delete'])->only(['destroy']);
+        $this->authorizeResource(Comment::class, 'comment');
+    }
+
     /**
      * Display a listing of the resource.
      *

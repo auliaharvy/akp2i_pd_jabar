@@ -16,6 +16,7 @@ class DivisionController extends Controller
         $this->middleware(['permission:division-create'])->only(['create', 'store', 'position']);
         $this->middleware(['permission:division-update'])->only(['edit', 'update']);
         $this->middleware(['permission:division-delete'])->only(['destroy']);
+        $this->authorizeResource(Division::class, 'division');
     }
 
     /**

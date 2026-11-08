@@ -41,7 +41,7 @@ Route::middleware('auth:sanctum')->prefix('dashboard')->group(function () {
     Route::post('thread-comment', [ThreadController::class, 'comment'])->name('thread.comment');
 
     # Komentar
-    Route::resource('comment', CommentController::class);
+    Route::resource('comment', CommentController::class)->only(['edit', 'update', 'destroy']);
 
     # Jurnal
     Route::resource('research', ResearchController::class);

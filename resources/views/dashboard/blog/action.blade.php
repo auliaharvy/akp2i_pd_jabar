@@ -14,7 +14,7 @@
     </a>
   </div>
 
-  @if ($blog->user_id == Auth::user()->id || Auth::user()->hasAnyRole('super_administrator|administrator'))
+  @can('update', $blog)
   <div class="ms-2">
     <a class="btn btn-sm btn-icon btn-light-success btn-active-light-dark" data-bs-toggle="tooltip" title="Ubah"
       href="{{ route('blog.edit', $blog->id) }}">
@@ -50,5 +50,5 @@
       </span>
     </a>
   </div>
-  @endif
+  @endcan
 </div>

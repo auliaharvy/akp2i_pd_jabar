@@ -66,7 +66,7 @@
               <option value="super_administrator">
                 Super Administrator
               </option>
-              <option value="administrator">
+              <option value="admin_pd">
                 Administrator
               </option>
             </select>

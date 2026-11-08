@@ -92,12 +92,9 @@
                     <div class="mb-6">
                         <label class="form-label required">Hak Akses</label>
                         <select class="form-select" name="role" required>
-                            @if (Auth::user()->hasRole('super_administrator'))
-                            <option value="member">Anggota</option>
-                            <option value="administrator">Administrator</option>
-                            @else
-                            <option value="member">Anggota</option>
-                            @endif
+                            @foreach (Auth::user()->assignableRoles() as $role)
+                            <option value="{{ $role }}" @selected(old('role', 'anggota') == $role)>{{ config('akp2i.roles.' . $role) }}</option>
+                            @endforeach
                         </select>
                     </div>
                 </div>

@@ -19,6 +19,7 @@ class BlogController extends Controller
         $this->middleware(['permission:blog-create'])->only(['create', 'store']);
         $this->middleware(['permission:blog-update'])->only(['edit', 'update']);
         $this->middleware(['permission:blog-delete'])->only(['destroy']);
+        $this->authorizeResource(Blog::class, 'blog');
     }
 
     /**
@@ -62,7 +63,7 @@ class BlogController extends Controller
         Blog::create([
             'title' => $request->input('title'),
             'slug' => $slug,
-            'publication_status' => $request->input('publication_status'),
+            'publication_status' => $this->publicationStatus($request),
             'body' => $request->input('body'),
             'user_id' => Auth::user()->id,
             'thumbnail' => $photoName
@@ -130,7 +131,7 @@ class BlogController extends Controller
         $blog->title = $request->input('title');
         $blog->slug  = $slug;
         $blog->body = $request->input('body');
-        $blog->publication_status = $request->input('publication_status');
+        $blog->publication_status = $this->publicationStatus($request);
         $blog->save();
 
         return redirect()->route('blog.edit', $blog->id)->with('success', 'Blog telah diubah.');
@@ -158,7 +159,7 @@ class BlogController extends Controller
      */
     public function datatable(Request $request)
     {
-        if (Auth::user()->hasAnyRole('super_administrator|administrator|member')) {
+        if (Auth::user()->can('publish', Blog::class)) {
             if ($request->ajax()) {
                 $blogs = Blog::query();
     
@@ -192,6 +193,12 @@ class BlogController extends Controller
         }
     }
 
+    /** B5: penulis non-penerbit selalu kembali ke antrean review (0), apa pun isi request. */
+    private function publicationStatus(Request $request): int
+    {
+        return $request->user()->can('publish', Blog::class) ? (int) $request->boolean('publication_status') : 0;
+    }
+
     /**
      * Validate request
      */
@@ -199,7 +206,7 @@ class BlogController extends Controller
     {
         $request->validate([
             'title' => 'required|string|max:300',
-            'publication_status' => 'required|boolean',
+            'publication_status' => 'nullable|boolean',
             'body' => 'required|string'
         ]);
     }

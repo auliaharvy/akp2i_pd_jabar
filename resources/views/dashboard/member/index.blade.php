@@ -41,7 +41,7 @@
         <div class="card">
             <div class="card-header">
                 <div class="card-title fs-3 fw-bolder">Daftar Anggota</div>
-                @if (Auth::user()->hasRole('super_administrator') || Auth::user()->hasRole('administrator'))
+                @if (Auth::user()->can('user-create'))
                 <div class="card-toolbar">
                     <div class="d-flex justify-content-end" data-kt-docs-table-toolbar="base">
                         <button class="btn btn-sm btn-light-primary w-200px" data-kt-menu-trigger="click"

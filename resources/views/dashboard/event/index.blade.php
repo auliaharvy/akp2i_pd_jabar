@@ -41,7 +41,7 @@
             <div class="card-header">
                 <div class="card-title fs-3 fw-bolder">Daftar Acara</div>
                 <div class="card-toolbar">
-                    @if (Auth::user()->hasAnyRole('super_administrator|administrator'))
+                    @if (Auth::user()->can('event-create'))
                     <a class="btn btn-sm btn-light-primary" data-bs-toggle="tooltip" title="Tambah Acara"
                         href="{{ route('event.create') }}">
                         <span class="svg-icon svg-icon-2">

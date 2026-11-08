@@ -3,306 +3,39 @@
 namespace Database\Seeders;
 
 use App\Models\User;
-use Illuminate\Database\Eloquent\Factories\Sequence;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
-use Spatie\Permission\Models\Permission as PermissionModel;
-use Spatie\Permission\Models\Role as PermissionRole;
-use Spatie\Permission\PermissionRegistrar;
 
 class UserSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     *
-     * @return void
-     */
-    public function run()
+    /** Akun demo per role; password semua "password". */
+    public const ACCOUNTS = [
+        'super_administrator' => ['Super Administrator', 'superadmin@mail.com'],
+        'admin_pd' => ['Admin PD', 'admin@mail.com'],
+        'editor' => ['Editor', 'editor@mail.com'],
+        'admin_pc' => ['Admin PC', 'adminpc@mail.com'],
+        'anggota' => ['Anggota', 'member@mail.com'],
+        'umum' => ['Umum', 'general@mail.com'],
+    ];
+
+    public function run(): void
     {
-        # Reset cached roles and permissions
-        app()[PermissionRegistrar::class]->forgetCachedPermissions();
+        $this->call(RolePermissionSeeder::class);
 
-        # Create permissions
-        $permissions = [
-            'dashboard-view',
-
-            'division-view',
-            'division-create',
-            'division-update',
-            'division-delete',
-
-            'position-view',
-            'position-create',
-            'position-update',
-            'position-delete',
-
-            'blog-view',
-            'blog-create',
-            'blog-update',
-            'blog-delete',
-
-            'research-view',
-            'research-create',
-            'research-update',
-            'research-delete',
-
-            'thread-view',
-            'thread-create',
-            'thread-update',
-            'thread-delete',
-
-            'comment-view',
-            'comment-create',
-            'comment-update',
-            'comment-delete',
-
-            'event-view',
-            'event-create',
-            'event-update',
-            'event-delete',
-
-            'participant-view',
-            'participant-create',
-            'participant-update',
-            'participant-delete',
-
-            'member-view',
-            'member-create',
-            'member-update',
-            'member-delete',
-
-            'general-view',
-            'general-create',
-            'general-update',
-            'general-delete',
-
-            'admin-view',
-            'admin-create',
-            'admin-update',
-            'admin-delete',
-
-            'profile-view',
-            'profile-create',
-            'profile-update',
-            'profile-delete',
-
-            // 'notification-view',
-            // 'notification-create',
-            // 'notification-update',
-            // 'notification-delete',
-
-            'setting-view',
-            'setting-create',
-            'setting-update',
-            'setting-delete',
-        ];
-
-        foreach ($permissions as $permission) {
-            PermissionModel::create(['name' => $permission]);
+        $i = 0;
+        foreach (self::ACCOUNTS as $role => [$name, $email]) {
+            User::factory()->create([
+                'name' => $name,
+                'gender' => 'L',
+                'birthplace' => 'Bandung',
+                'date_of_birth' => now(),
+                'phone_number' => '0812345678' . str_pad(++$i, 2, '0', STR_PAD_LEFT),
+                'email' => $email,
+                'password' => Hash::make('password'),
+                'address' => 'Bandung',
+                'division_id' => null,
+                'position_id' => null,
+            ])->assignRole($role);
         }
-
-        # Create roles
-        $roleSuperadministrator = PermissionRole::create(['name' => 'super_administrator']);
-
-        $roleAdministrator = PermissionRole::create(['name' => 'administrator']);
-        $roleAdministrator->syncPermissions([
-            'dashboard-view',
-
-            'division-view',
-            'division-create',
-            'division-update',
-            'division-delete',
-
-            'position-view',
-            'position-create',
-            'position-update',
-            'position-delete',
-
-            'blog-view',
-            'blog-create',
-            'blog-update',
-            'blog-delete',
-
-            'research-view',
-            'research-create',
-            'research-update',
-            'research-delete',
-
-            'thread-view',
-            'thread-create',
-            'thread-update',
-            'thread-delete',
-
-            'comment-view',
-            'comment-create',
-            'comment-update',
-            'comment-delete',
-
-            'event-view',
-            'event-create',
-            'event-update',
-            'event-delete',
-
-            'participant-view',
-            'participant-create',
-            'participant-update',
-            'participant-delete',
-
-            'member-view',
-            'member-create',
-            'member-update',
-
-            'general-view',
-            'general-create',
-            'general-update',
-            'general-delete',
-
-            'profile-view',
-            'profile-create',
-            'profile-update',
-            'profile-delete',
-
-            // 'notification-view',
-            // 'notification-create',
-            // 'notification-update',
-            // 'notification-delete',
-
-            'setting-view',
-            'setting-create',
-            'setting-update',
-            'setting-delete',
-        ]);
-
-        $roleMember = PermissionRole::create(['name' => 'member']);
-        $roleMember->syncPermissions([
-            'dashboard-view',
-
-            'division-view',
-
-            'position-view',
-
-            'blog-view',
-            'blog-create',
-            'blog-update',
-            'blog-delete',
-
-            'thread-view',
-            'thread-create',
-            'thread-update',
-            'thread-delete',
-
-            'comment-view',
-            'comment-create',
-            'comment-update',
-            'comment-delete',
-
-            'research-view',
-
-            'event-view',
-
-            'participant-view',
-
-            'member-view',
-
-            'general-view',
-
-            'profile-view',
-            'profile-create',
-            'profile-update',
-            'profile-delete',
-
-        ]);
-
-        $roleGeneral = PermissionRole::create(['name' => 'general']);
-        $roleGeneral->syncPermissions([
-            'dashboard-view',
-
-            'blog-view',
-            'blog-create',
-            'blog-update',
-            'blog-delete',
-
-            'thread-view',
-            'thread-create',
-            'thread-update',
-            'thread-delete',
-
-            'comment-view',
-            'comment-create',
-            'comment-update',
-            'comment-delete',
-
-            'profile-view',
-            'profile-create',
-            'profile-update',
-            'profile-delete',
-        ]);
-
-        # Create users
-        $userSuperadministrator = User::factory()->create([
-            'name' => 'Super Administrator',
-            'gender' => 'L',
-            'birthplace' => 'Bandung',
-            'date_of_birth' => now(),
-
-            'phone_number' => '01234678901',
-            'email' => 'superadmin@mail.com',
-            'password' => Hash::make('password'),
-            'address' => 'Bandung',
-
-            'division_id' => null,
-            'position_id' => null,
-        ]);
-
-        $userAdministrator = User::factory()->create([
-            'name' => 'Administrator',
-            'gender' => 'L',
-            'birthplace' => 'Bandung',
-            'date_of_birth' => now(),
-
-            'phone_number' => '01234678902',
-            'email' => 'admin@mail.com',
-            'password' => Hash::make('password'),
-            'address' => 'Bandung',
-
-            'division_id' => null,
-            'position_id' => null,
-        ]);
-
-        $userMember = User::factory()->create([
-            'name' => 'Member',
-            'gender' => 'L',
-            'birthplace' => 'Bandung',
-            'date_of_birth' => now(),
-
-            'phone_number' => '01234678903',
-            'email' => 'member@mail.com',
-            'password' => Hash::make('password'),
-            'address' => 'Bandung',
-
-            'division_id' => null,
-            'position_id' => null,
-        ]);
-
-        $userGeneral = User::factory()->create([
-            'name' => 'General',
-            'gender' => 'L',
-            'birthplace' => 'Bandung',
-            'date_of_birth' => now(),
-
-            'phone_number' => '01234678904',
-            'email' => 'general@mail.com',
-            'password' => Hash::make('password'),
-            'address' => 'Bandung',
-
-            'division_id' => null,
-            'position_id' => null
-        ]);
-
-        # Assign roles
-        $userSuperadministrator->assignRole($roleSuperadministrator);
-        $userAdministrator->assignRole($roleAdministrator);
-        $userMember->assignRole($roleMember);
-        $userGeneral->assignRole($roleGeneral);
     }
 }

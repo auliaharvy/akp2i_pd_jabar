@@ -32,7 +32,7 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
 
-        if (Auth::user()->hasAnyRole(['super_administrator', 'administrator', 'member', 'general'])) {
+        if (Auth::user()->hasAnyRole(array_keys(config('akp2i.roles')))) {
             return redirect()->route('home');
         }
 

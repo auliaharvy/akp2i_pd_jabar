@@ -35,13 +35,14 @@
             <!-- End::Dashboard -->
 
             <!-- Start::Data Postingan -->
-            @hasrole('super_administrator|administrator|member|general')
+            @canany(['blog-view', 'thread-view', 'research-view'])
             <div class="menu-item pt-5">
                 <div class="menu-content pb-2">
                     <span class="menu-section text-muted text-uppercase fs-7 fw-bolder">Postingan</span>
                 </div>
             </div>
 
+            @can('blog-view')
             {{-- Start::Blog --}}
             <x-dashboard.aside.single_menu linkClass="{{ $blogMenu }}" title="Blog" url="{{ route('blog.index') }}">
                 <x-slot name="icon">
@@ -56,7 +57,9 @@
                 </x-slot>
             </x-dashboard.aside.single_menu>
             {{-- End::Blog --}}
+            @endcan
 
+            @can('thread-view')
             {{-- Start::Forum --}}
             <x-dashboard.aside.single_menu linkClass="{{ $threadMenu }}" title="Forum"
                 url="{{ route('thread.index') }}">
@@ -72,8 +75,9 @@
                 </x-slot>
             </x-dashboard.aside.single_menu>
             {{-- End::Forum --}}
+            @endcan
 
-            @hasrole('super_administrator|administrator|member')
+            @can('research-view')
             {{-- Start::Jurnal --}}
             <x-dashboard.aside.single_menu linkClass="{{ $researchMenu }}" title="Jurnal"
                 url="{{ route('research.index') }}">
@@ -87,18 +91,19 @@
                 </x-slot>
             </x-dashboard.aside.single_menu>
             {{-- End::Jurnal --}}
-            @endhasrole
-            @endhasrole
+            @endcan
+            @endcanany
             <!-- End::Data Postingan -->
 
             <!-- Start::Data Kegiatan -->
-            @hasrole('super_administrator|administrator|member')
+            @canany(['event-view', 'participant-view'])
             <div class="menu-item pt-5">
                 <div class="menu-content pb-2">
                     <span class="menu-section text-muted text-uppercase fs-7 fw-bolder">Kegiatan</span>
                 </div>
             </div>
 
+            @can('event-view')
             {{-- Start::Acara --}}
             <x-dashboard.aside.single_menu linkClass="{{ $eventMenu }}" title="Acara" url="{{ route('event.index') }}">
                 <x-slot name="icon">
@@ -116,7 +121,9 @@
                 </x-slot>
             </x-dashboard.aside.single_menu>
             {{-- End::Acara --}}
+            @endcan
 
+            @can('participant-view')
             {{-- Start::Peserta --}}
             <x-dashboard.aside.single_menu linkClass="{{ $participantMenu }}" title="Peserta"
                 url="{{ route('participant.index') }}">
@@ -132,17 +139,19 @@
                 </x-slot>
             </x-dashboard.aside.single_menu>
             {{-- End::Peserta --}}
-            @endhasrole
+            @endcan
+            @endcanany
             <!-- End::Data Kegiatan -->
 
             <!-- Start::Data Pengguna -->
-            @hasrole('super_administrator|administrator|member')
+            @canany(['user-view', 'division-view', 'position-view'])
             <div class="menu-item pt-5">
                 <div class="menu-content pb-2">
                     <span class="menu-section text-muted text-uppercase fs-7 fw-bolder">Pengguna</span>
                 </div>
             </div>
 
+            @can('user-view')
             {{-- Start::Anggota --}}
             <x-dashboard.aside.single_menu linkClass="{{ $memberMenu }}" title="Anggota"
                 url="{{ route('member.index') }}">
@@ -156,7 +165,9 @@
                 </x-slot>
             </x-dashboard.aside.single_menu>
             {{-- End::Anggota --}}
+            @endcan
 
+            @can('division-view')
             {{-- Start::Divisi --}}
             <x-dashboard.aside.single_menu linkClass="{{ $divisionMenu }}" title="Divisi"
                 url="{{ route('division.index') }}">
@@ -172,7 +183,9 @@
                 </x-slot>
             </x-dashboard.aside.single_menu>
             {{-- End::Divisi --}}
+            @endcan
 
+            @can('position-view')
             {{-- Start::Posisi --}}
             <x-dashboard.aside.single_menu linkClass="{{ $positionMenu }}" title="Posisi"
                 url="{{ route('position.index') }}">
@@ -191,7 +204,9 @@
                 </x-slot>
             </x-dashboard.aside.single_menu>
             {{-- End::Posisi --}}
+            @endcan
 
+            @can('user-view')
             {{-- Start::Umum --}}
             <x-dashboard.aside.single_menu linkClass="{{ $generalMenu }}" title="Umum"
                 url="{{ route('general.index') }}">
@@ -209,11 +224,12 @@
                 </x-slot>
             </x-dashboard.aside.single_menu>
             {{-- End::Umum --}}
-            @endhasrole
+            @endcan
+            @endcanany
             <!-- End::Data Pengguna -->
 
             <!-- Start::Data Pengaturan -->
-            @hasrole('super_administrator|administrator')
+            @can('setting-view')
             <div class="menu-item pt-5">
                 <div class="menu-content pb-2">
                     <span class="menu-section text-muted text-uppercase fs-7 fw-bolder">Pengaturan</span>
@@ -238,7 +254,7 @@
             {{-- End::Administrator --}}
             @endhasrole
 
-            @hasanyrole('super_administrator|administrator')
+            @can('setting-view')
             {{-- Start::Aplikasi --}}
             <x-dashboard.aside.single_menu linkClass="{{ $settingMenu }}" title="Aplikasi"
                 url="{{ route('setting.edit', 1) }}">
@@ -252,7 +268,7 @@
                 </x-slot>
             </x-dashboard.aside.single_menu>
             {{-- End::Aplikasi --}}
-            @endhasrole
+            @endcan
 
             {{-- Start::Notifikasi --}}
             {{-- <x-dashboard.aside.single_menu linkClass="{{ $notificationMenu }}" title="Notifikasi"
@@ -277,7 +293,7 @@
                 </div>
             </div>
             {{-- End::Separator --}}
-            @endhasrole
+            @endcan
             <!-- End::Data Pengaturan -->
         </div>
         <!-- End::Aside Menu -->

@@ -16,7 +16,7 @@
 
     {{-- Start::Post component --}}
     <x-slot name="post">
-        @if (Auth::user()->hasAnyRole('super_administrator|administrator|member'))
+        @if (Auth::user()->can('blog-view'))
 
         <div class="row g-5 g-xl-8">
             <div class="col-xl-6">

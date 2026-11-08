@@ -14,7 +14,7 @@
     </a>
   </div>
 
-  @if ($thread->user_id == Auth::user()->id || Auth::user()->hasAnyRole('super_administrator|administrator'))
+  @can('update', $thread)
   <div class="ms-2">
     <a class="btn btn-sm btn-icon btn-light-success btn-active-light-dark" data-bs-toggle="tooltip" title="Ubah"
       href="{{ route('thread.edit', $thread->id) }}">
@@ -50,5 +50,5 @@
       </span>
     </a>
   </div>
-  @endif
+  @endcan
 </div>

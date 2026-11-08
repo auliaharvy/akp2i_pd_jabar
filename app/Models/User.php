@@ -54,6 +54,23 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
     ];
 
+    /** Role yang boleh ditetapkan user ini ke orang lain (B4: hanya SA yang memegang SA & admin PD). */
+    public function assignableRoles(): array
+    {
+        $roles = array_keys(config('akp2i.roles'));
+
+        return $this->hasRole('super_administrator')
+            ? $roles
+            : array_values(array_diff($roles, ['super_administrator', 'admin_pd']));
+    }
+
+    /** B4: admin non-SA tidak boleh menyentuh akun SA atau admin PD. */
+    public function canManage(User $target): bool
+    {
+        return $this->hasRole('super_administrator')
+            || ! $target->hasAnyRole(['super_administrator', 'admin_pd']);
+    }
+
     public function blogs()
     {
         return $this->hasMany(Blog::class);

@@ -19,10 +19,11 @@ class GeneralController extends Controller
 {
     public function __construct()
     {
-        $this->middleware(['permission:general-view'])->only(['index', 'show', 'datatable']);
-        $this->middleware(['permission:general-create'])->only(['create', 'store']);
-        $this->middleware(['permission:general-update'])->only(['edit', 'update']);
-        $this->middleware(['permission:general-delete'])->only(['destroy']);
+        $this->middleware(['permission:user-view'])->only(['index', 'show', 'datatable']);
+        $this->middleware(['permission:user-create'])->only(['create', 'store']);
+        $this->middleware(['permission:user-update'])->only(['edit', 'update']);
+        $this->middleware(['permission:user-delete'])->only(['destroy']);
+        $this->authorizeResource(User::class, 'general');
     }
 
     /**
@@ -76,7 +77,7 @@ class GeneralController extends Controller
             'photo' => $photoName
         ]);
 
-        $general->assignRole('general');
+        $general->assignRole('umum');
 
         return redirect()->route('general.create')->with('success', 'Pengguna ' . $request->input('name') . ' berhasil ditambahkan.');
     }
@@ -195,7 +196,7 @@ class GeneralController extends Controller
                 'id',
                 'name',
                 'email'
-            )->role(['general']);
+            )->role(['umum']);
 
             return DataTables::eloquent($generals)
                 ->addColumn('action', function ($general) {

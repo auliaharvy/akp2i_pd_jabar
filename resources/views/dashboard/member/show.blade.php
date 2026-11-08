@@ -47,13 +47,7 @@
                             </div>
                             <span class="fs-3 text-gray-800 fw-bolder mb-3">{{ $member->name }}</span>
                             <div class="mb-9">
-                                @if ($member->hasRole('super_administrator'))
-                                <span class="badge badge-lg badge-light-primary d-inline">Super Administrator</span>
-                                @elseif ($member->hasRole('administrator'))
-                                <span class="badge badge-lg badge-light-success d-inline">Administrator</span>
-                                @elseif ($member->hasRole('member'))
-                                <span class="badge badge-lg badge-light-warning d-inline">Anggota</span>
-                                @endif
+                                <x-dashboard.role-badge :user="$member" class="badge-lg d-inline" />
                             </div>
                         </div>
 

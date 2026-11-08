@@ -48,15 +48,7 @@
                             </div>
                             <span class="fs-3 text-gray-800 fw-bolder mb-3">{{ $user->name }}</span>
                             <div class="mb-9">
-                                @if (Auth::user()->hasRole('super_administrator'))
-                                <span class="badge badge-lg badge-light-primary d-inline">Super Administrator</span>
-                                @elseif (Auth::user()->hasRole('administrator'))
-                                <span class="badge badge-lg badge-light-success d-inline">Administrator</span>
-                                @elseif (Auth::user()->hasRole('member'))
-                                <span class="badge badge-lg badge-light-warning d-inline">Anggota</span>
-                                @elseif (Auth::user()->hasRole('general'))
-                                <span class="badge badge-lg badge-light-danger d-inline">Umum</span>
-                                @endif
+                                <x-dashboard.role-badge :user="Auth::user()" class="badge-lg d-inline" />
                             </div>
                         </div>
 

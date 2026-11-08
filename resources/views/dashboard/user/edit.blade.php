@@ -74,13 +74,9 @@
                     <div>
                         <label class="form-label required">Hak Akses</label>
                         <select class="form-select" name="role" required>
-                            <option value="super_administrator" {{ $administrator->hasRole('super_administrator') ?
-                                'selected' :
-                                '' }}>Super Administrator</option>
-                            <option value="administrator" {{ $administrator->hasRole('administrator') ? 'selected' : ''
-                                }}>Administrator</option>
-                            <option value="member" {{ $administrator->hasRole('member') ? 'selected' : '' }}>Anggota
-                            </option>
+                            @foreach (Auth::user()->assignableRoles() as $role)
+                            <option value="{{ $role }}" @selected(old('role', $administrator->getRoleNames()->first()) == $role)>{{ config('akp2i.roles.' . $role) }}</option>
+                            @endforeach
                         </select>
                     </div>
                 </div>

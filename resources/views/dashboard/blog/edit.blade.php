@@ -55,7 +55,7 @@
                     </div>
                     <div class="mb-6">
                         <label class="form-label">Status Publikasi</label>
-                        @if (Auth::user()->hasAnyRole('super_administrator|administrator'))
+                        @if (Auth::user()->can('publish', App\Models\Blog::class))
                         <select class="form-select" name="publication_status" required>
                             <option value="0" {{ $blog->publication_status == 0 ? 'selected' : '' }}>Belum Terbit
                             </option>
@@ -69,8 +69,6 @@
                             <option value="1" {{ $blog->publication_status == 1 ? 'selected' : '' }}>Telah Terbit
                             </option>
                         </select>
-                        <input class="form-control" type="text" name="publication_status"
-                            value="{{ $blog->publication_status }}" required hidden>
                         @endif
                     </div>
                     <div class="mb-7">

@@ -19,6 +19,7 @@ class ThreadController extends Controller
         $this->middleware(['permission:thread-create'])->only(['create', 'store', 'comment']);
         $this->middleware(['permission:thread-update'])->only(['edit', 'update']);
         $this->middleware(['permission:thread-delete'])->only(['destroy']);
+        $this->authorizeResource(Thread::class, 'thread');
     }
 
     /**
@@ -55,7 +56,7 @@ class ThreadController extends Controller
             'title' => $request->input('title'),
             'slug' => Str::slug($request->input('title') . '-' . time()),
             'body' => $request->input('body'),
-            'publication_status' => $request->input('publication_status'),
+            'publication_status' => $request->user()->can('publish', Thread::class) ? (int) $request->boolean('publication_status') : 1,
             'user_id' => Auth::user()->id
         ]);
 
@@ -71,9 +72,11 @@ class ThreadController extends Controller
     public function comment(Request $request)
     {
         $request->validate([
-            'thread_id' => 'required|numeric',
+            'thread_id' => 'required|exists:threads,id',
             'body' => 'required|string',
         ]);
+        $this->authorize('view', Thread::findOrFail($request->input('thread_id')));
+        $this->authorize('create', Comment::class);
 
         Comment::create([
             'thread_id' => $request->input('thread_id'),
@@ -128,8 +131,9 @@ class ThreadController extends Controller
         $thread->title = $request->input('title');
         $thread->slug = Str::slug($request->input('title') . '-' . time());
         $thread->body = $request->input('body');
-        $thread->publication_status = $request->input('publication_status');
-        $thread->user_id = Auth::user()->id;
+        if ($request->user()->can('publish', Thread::class)) {
+            $thread->publication_status = $request->boolean('publication_status');
+        }
         $thread->save();
 
         return redirect()->route('thread.edit', $thread->id)->with('success', 'Forum telah diubah.');
@@ -153,7 +157,7 @@ class ThreadController extends Controller
      */
     public function datatable(Request $request)
     {
-        if (Auth::user()->hasAnyRole('super_administrator|administrator|member')) {
+        if (Auth::user()->can('publish', Thread::class)) {
             if ($request->ajax()) {
                 $threads = Thread::query();
 
@@ -171,7 +175,7 @@ class ThreadController extends Controller
         } else {
             if ($request->ajax()) {
                 $threads = Thread::with('user')
-                ->where('user_id', '=', Auth::user()->id);
+                    ->where(fn ($q) => $q->where('publication_status', 1)->orWhere('user_id', Auth::user()->id));
 
                 return DataTables::eloquent($threads)
                     ->addColumn('status', function ($thread) {
@@ -195,7 +199,7 @@ class ThreadController extends Controller
         $request->validate([
             'title' => 'required|string|max:300',
             'body' => 'required|string',
-            'publication_status' => 'required|boolean'
+            'publication_status' => 'nullable|boolean'
         ]);
     }
 }
