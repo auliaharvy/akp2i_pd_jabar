@@ -33,7 +33,7 @@ class DashboardSmokeTest extends TestCase
             ->all();
     }
 
-    public function roleEmails(): array
+    public static function roleEmails(): array
     {
         return [
             'super admin' => ['superadmin@mail.com'],
