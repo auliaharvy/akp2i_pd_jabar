@@ -22,10 +22,12 @@ use App\Http\Controllers\MemberController;
 use App\Http\Controllers\ParticipantController;
 use App\Http\Controllers\PositionController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\ReportController;
 use App\Http\Controllers\ResearchController;
 use App\Http\Controllers\SettingController;
 use App\Http\Controllers\SliderController;
 use App\Http\Controllers\SuspensionController;
+use App\Http\Controllers\TaxonomyController;
 use App\Http\Controllers\ThreadController;
 use Illuminate\Support\Facades\Route;
 
@@ -37,6 +39,7 @@ Route::middleware('auth:sanctum')->prefix('dashboard')->group(function () {
     Route::get('profil', [ProfileController::class, 'index'])->name('profile.index');
     Route::patch('profil', [ProfileController::class, 'update'])->name('profile.update');
     Route::patch('profil/password', [ProfileController::class, 'password'])->name('profile.password');
+    Route::patch('profil/notifikasi', [ProfileController::class, 'notifications'])->name('profile.notifications');
     Route::get('profile-datatable', [ProfileController::class, 'datatable'])->name('profile.datatable');
 
     /*
@@ -51,7 +54,14 @@ Route::middleware('auth:sanctum')->prefix('dashboard')->group(function () {
     # Forum
     Route::resource('thread', ThreadController::class);
     Route::get('thread-datatable', [ThreadController::class, 'datatable'])->name('thread.datatable');
-    Route::post('thread-comment', [ThreadController::class, 'comment'])->name('thread.comment');
+    Route::patch('thread/{thread}/moderasi', [ThreadController::class, 'moderate'])->name('thread.moderate');
+    Route::get('report-datatable', [ReportController::class, 'datatable'])->name('report.datatable');
+    Route::get('laporan-forum', [ReportController::class, 'index'])->name('report.index');
+    Route::patch('laporan-forum/{report}', [ReportController::class, 'resolve'])->name('report.resolve');
+    Route::get('taksonomi/{type}', [TaxonomyController::class, 'index'])->name('taxonomy.index');
+    Route::post('taksonomi/{type}', [TaxonomyController::class, 'store'])->name('taxonomy.store');
+    Route::patch('taksonomi/{type}/{id}', [TaxonomyController::class, 'update'])->name('taxonomy.update');
+    Route::delete('taksonomi/{type}/{id}', [TaxonomyController::class, 'destroy'])->name('taxonomy.destroy');
 
     # Komentar
     Route::resource('comment', CommentController::class)->only(['edit', 'update', 'destroy']);

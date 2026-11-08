@@ -14,8 +14,8 @@ class HomeController extends Controller
     public function index()
     {
         $counter = [
-            'blog' => Blog::select('id')->where('publication_status', '=', 1)->count(),
-            'thread' => Thread::select('id')->where('publication_status', '=', 1)->count(),
+            'blog' => Blog::published()->count(),
+            'thread' => Thread::published()->count(),
             'research' =>  Research::select('id')->count(),
             'event' => Event::select('id')->count(),
             'user' => User::select('id')->count()

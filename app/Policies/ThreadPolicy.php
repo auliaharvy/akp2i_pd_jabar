@@ -4,6 +4,7 @@ namespace App\Policies;
 
 use App\Models\User;
 
+/** PRD 8.7: penulis mengedit/menghapus miliknya; moderator menyembunyikan, mengunci, menyematkan. */
 class ThreadPolicy extends OwnedPolicy
 {
     protected string $module = 'thread';
@@ -12,12 +13,17 @@ class ThreadPolicy extends OwnedPolicy
 
     public function view(User $user, $thread): bool
     {
-        return parent::view($user, $thread) && ($thread->publication_status || $this->owns($user, $thread) || $this->moderates($user));
+        return parent::view($user, $thread) && ($thread->status === 'published' || $this->owns($user, $thread) || $this->moderates($user));
     }
 
-    /** B5: hanya moderator yang menyembunyikan/menerbitkan thread. */
-    public function publish(User $user): bool
+    public function moderate(User $user): bool
     {
         return $this->moderates($user);
+    }
+
+    /** Thread terkunci atau tersembunyi tidak bisa dibalas. */
+    public function reply(User $user, $thread): bool
+    {
+        return $user->can('comment-create') && $thread->status === 'published' && ! $thread->is_locked;
     }
 }

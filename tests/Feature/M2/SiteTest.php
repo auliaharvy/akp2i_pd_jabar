@@ -46,8 +46,8 @@ class SiteTest extends TestCase
         $gallery = Gallery::create(['title' => 'Rapat Kerja', 'published_at' => now()]);
         $uris = ['/', '/profil', '/pengurus', '/pengurus-cabang', "/pengurus-cabang/{$pc->slug}", '/galeri', "/galeri/{$gallery->slug}",
             '/peraturan-organisasi', '/keanggotaan', '/keanggotaan/layanan', '/keanggotaan/cek', '/keanggotaan/cek?nomor=AKP2I-000001',
-            '/kontak', '/kebijakan-privasi', '/syarat-ketentuan', '/pelatihan', '/pelatihan/ppl-1', '/berita', '/berita/x', '/jurnal',
-            '/forum', '/sertifikat/ABC123'];
+            '/kontak', '/kebijakan-privasi', '/syarat-ketentuan', '/pelatihan', '/pelatihan/ppl-1', '/berita', '/berita/' . \App\Models\Blog::published()->value('slug'), '/jurnal', '/jurnal/' . \App\Models\Research::value('slug'),
+            '/forum', '/forum/' . \App\Models\Thread::value('slug'), '/sertifikat/ABC123'];
 
         foreach ($uris as $uri) {
             $this->get($uri)->assertOk()->assertSee('<meta property="og:title"', false);

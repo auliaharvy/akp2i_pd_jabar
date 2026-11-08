@@ -33,6 +33,7 @@ class User extends Authenticatable
 
         'organization_id',
         'is_active',
+        'notify_forum_replies',
     ];
 
     /**
@@ -53,6 +54,7 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
         'is_active' => 'boolean',
+        'notify_forum_replies' => 'boolean',
     ];
 
     /** Role yang boleh ditetapkan user ini ke orang lain (B4: hanya SA yang memegang SA & admin PD). */

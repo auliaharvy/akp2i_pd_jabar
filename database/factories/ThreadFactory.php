@@ -23,10 +23,10 @@ class ThreadFactory extends Factory
     public function definition()
     {
         return [
-            'title' => $this->faker->title,
-            'slug' => $this->faker->slug,
-            'body' => $this->faker->sentence,
-            'publication_status' => $this->faker->boolean(),
+            'title' => rtrim($this->faker->sentence(7), '.') . '?',
+            'body' => '<p>' . $this->faker->paragraph(4) . '</p>',
+            'status' => 'published',
+            'forum_category_id' => fn () => \App\Models\ForumCategory::inRandomOrder()->value('id'),
             'user_id' => User::inRandomOrder()->first()
         ];
     }

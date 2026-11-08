@@ -3,211 +3,152 @@
 namespace App\Http\Controllers;
 
 use App\Models\Blog;
-use Carbon\Carbon;
+use App\Models\Category;
+use App\Models\Tag;
+use App\Models\User;
+use App\Notifications\BlogAwaitingReview;
+use App\Support\Html;
+use App\Support\Upload;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Str;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\Session;
+use Illuminate\Validation\Rule;
 use Yajra\DataTables\Facades\DataTables;
 
+/** Berita & Artikel (PRD 8.6). */
 class BlogController extends Controller
 {
     public function __construct()
     {
-        $this->middleware(['permission:blog-view'])->only(['index', 'show', 'datatable']);
-        $this->middleware(['permission:blog-create'])->only(['create', 'store']);
-        $this->middleware(['permission:blog-update'])->only(['edit', 'update']);
-        $this->middleware(['permission:blog-delete'])->only(['destroy']);
+        $this->middleware('permission:blog-view')->only(['index', 'show', 'datatable']);
         $this->authorizeResource(Blog::class, 'blog');
     }
 
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
     public function index()
     {
         return view('dashboard.blog.index');
     }
 
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
-    {
-        return view('dashboard.blog.create');
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request $request
-     * @return \Illuminate\Http\Response
-     */
-    public function store(Request $request)
-    {
-        $this->validate_request($request);
-        $request->validate([
-            'thumbnail' => 'required|file|max:3048|mimes:jpeg,jpg,png,webp'
-        ]);
-
-        $slug = Str::slug($request->input('title') . '-' . time());
-        $photoFile = $request->file('thumbnail');
-        $photoName = $photoFile->hashName();
-        Storage::putFileAs('public/blog', $photoFile, $photoName);
-
-        Blog::create([
-            'title' => $request->input('title'),
-            'slug' => $slug,
-            'publication_status' => $this->publicationStatus($request),
-            'body' => $request->input('body'),
-            'user_id' => Auth::user()->id,
-            'thumbnail' => $photoName
-        ]);
-
-        return redirect()->route('blog.create')->with('success', 'Blog berhasil ditambahkan.');
-    }
-
-    /**
-     * Display the specified resource.
-     *
-     * @param  \App\Models\Blog  $blog
-     * @return \Illuminate\Http\Response
-     */
-    public function show(Blog $blog)
-    {
-        // Tanggal Posting //
-        $date_blog = Carbon::parse($blog->created_at)->locale('id');
-        $date_blog->settings(['formatFunction' => 'translatedFormat']);
-        $date_posted = $date_blog->format('l, j F Y');
-
-        return view('dashboard.blog.show', compact('blog', 'date_posted'));
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  \App\Models\Blog  $blog
-     * @return \Illuminate\Http\Response
-     */
-    public function edit(Blog $blog)
-    {
-        return view('dashboard.blog.edit', compact('blog'));
-    }
-
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\Blog $blog
-     * @return \Illuminate\Http\Response
-     */
-    public function update(Request $request, Blog $blog)
-    {
-        $this->validate_request($request);
-
-        $slug = Str::slug($request->input('title') . '-' . time());
-
-        if ($request->hasFile('thumbnail')) {
-            $request->validate([
-                'thumbnail' => 'nullable|file|max:3048|mimes:jpeg,jpg,png,webp'
-            ]);
-
-            if (Storage::exists('public/blog/' . $blog->thumbnail)) {
-                Storage::delete('public/blog/' . $blog->thumbnail);
-            }
-
-            $photoFile = $request->file('thumbnail');
-            $photoName = $photoFile->hashName();
-            Storage::putFileAs('public/blog', $photoFile, $photoName);
-
-            $blog->thumbnail = $photoName;
-        }
-
-        $blog->title = $request->input('title');
-        $blog->slug  = $slug;
-        $blog->body = $request->input('body');
-        $blog->publication_status = $this->publicationStatus($request);
-        $blog->save();
-
-        return redirect()->route('blog.edit', $blog->id)->with('success', 'Blog telah diubah.');
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  \App\Models\Blog  $blog
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy(Blog $blog)
-    {
-        Session::flash('success', 'Blog telah dihapus.');
-
-        if (Storage::exists('public/blog/' . $blog->thumbnail)) {
-            Storage::delete('public/blog/' . $blog->thumbnail);
-        }
-
-        $blog->delete();
-    }
-
-    /**
-     * Yajra datatable
-     */
     public function datatable(Request $request)
     {
-        if (Auth::user()->can('publish', Blog::class)) {
-            if ($request->ajax()) {
-                $blogs = Blog::select('blogs.*');
-    
-                return DataTables::eloquent($blogs)
-                    ->addColumn('status', function ($blog) {
-                        return view('dashboard.blog.status', compact('blog'))->render();
-                    })
-                    ->addColumn('action', function ($blog) {
-                        return view('dashboard.blog.action', compact('blog'))->render();
-                    })
-                    ->rawColumns(['status', 'action'])
-                    ->addIndexColumn()
-                    ->make(true);
-            }
+        $user = $request->user();
+        $blogs = Blog::select('blogs.*')->with('user', 'category')
+            // penerbit melihat semua; penulis lain hanya tulisannya
+            ->unless($user->can('publish', Blog::class), fn ($q) => $q->where('blogs.user_id', $user->id))
+            ->when($request->filled('status'), fn ($q) => $q->where('blogs.status', $request->input('status')));
+
+        return DataTables::eloquent($blogs)
+            ->editColumn('status', fn ($b) => Blog::STATUSES[$b->status])
+            ->editColumn('updated_at', fn ($b) => $b->updated_at->translatedFormat('d M Y'))
+            ->addColumn('action', fn ($b) => view('components.dashboard.row-actions', [
+                'show' => route('blog.show', $b),
+                'edit' => $user->can('update', $b) ? route('blog.edit', $b) : null,
+                'delete' => $user->can('delete', $b) ? route('blog.destroy', $b) : null,
+                'confirm' => null,
+            ])->render())
+            ->rawColumns(['action'])
+            ->addIndexColumn()
+            ->make(true);
+    }
+
+    public function create()
+    {
+        return view('dashboard.blog.form', ['blog' => new Blog(['status' => 'draft']), 'categories' => Category::orderBy('name')->pluck('name', 'id')]);
+    }
+
+    public function store(Request $request)
+    {
+        $data = $this->validated($request);
+        $blog = Blog::create($data + [
+            'user_id' => $request->user()->id,
+            // PRD 8.6: tulisan atas nama PD/PC penulis (admin PC = PC-nya, anggota = PC keanggotaan)
+            'organization_id' => $request->user()->organization_id ?? $request->user()->member?->organization_id,
+        ]);
+        $this->syncTags($blog, $request->input('tags'));
+        $this->notifyReviewers($blog, null);
+
+        return redirect()->route('blog.edit', $blog)->with('success', $this->statusMessage($blog));
+    }
+
+    public function show(Blog $blog)
+    {
+        return view('dashboard.blog.show', ['blog' => $blog->load('user', 'category', 'tags')]);
+    }
+
+    public function edit(Blog $blog)
+    {
+        return view('dashboard.blog.form', ['blog' => $blog->load('tags'), 'categories' => Category::orderBy('name')->pluck('name', 'id')]);
+    }
+
+    public function update(Request $request, Blog $blog)
+    {
+        $before = $blog->status;
+        $blog->update($this->validated($request, $blog)); // slug tidak berubah (dibuat sekali)
+        $this->syncTags($blog, $request->input('tags'));
+        $this->notifyReviewers($blog, $before);
+
+        return redirect()->route($request->user()->can('update', $blog) ? 'blog.edit' : 'blog.show', $blog)->with('success', $this->statusMessage($blog));
+    }
+
+    public function destroy(Blog $blog)
+    {
+        $blog->delete(); // soft delete; thumbnail disimpan untuk pemulihan
+        session()->flash('success', 'Tulisan dihapus.');
+
+        return response()->noContent();
+    }
+
+    private function validated(Request $request, ?Blog $blog = null): array
+    {
+        $data = $request->validate([
+            'title' => 'required|string|max:300',
+            'excerpt' => 'nullable|string|max:500',
+            'body' => 'required|string',
+            'category_id' => 'nullable|exists:categories,id',
+            'tags' => 'nullable|string|max:500',
+            'thumbnail' => 'nullable|' . Upload::IMAGE_RULE,
+            'status' => ['nullable', Rule::in(array_keys(Blog::STATUSES))],
+            'published_at' => 'nullable|date',
+        ]);
+        unset($data['tags']);
+        $data['body'] = Html::clean($data['body']);
+        if ($request->hasFile('thumbnail')) {
+            $data['thumbnail'] = Upload::store($request->file('thumbnail'), 'blog', $blog?->thumbnail);
+        }
+
+        // PRD 8.6 AC: penulis non-penerbit hanya bisa draft atau review; `published` dari request diabaikan
+        if ($request->user()->can('publish', Blog::class)) {
+            $data['status'] ??= 'published';
+            $data['published_at'] = $data['status'] === 'published' ? ($data['published_at'] ?? $blog?->published_at ?? now()) : null;
         } else {
-            if ($request->ajax()) {
-                $blogs = Blog::select('blogs.*')->with('user')
-                ->where('user_id', '=', Auth::user()->id);
-    
-                return DataTables::eloquent($blogs)
-                    ->addColumn('status', function ($blog) {
-                        return view('dashboard.blog.status', compact('blog'))->render();
-                    })
-                    ->addColumn('action', function ($blog) {
-                        return view('dashboard.blog.action', compact('blog'))->render();
-                    })
-                    ->rawColumns(['status', 'action'])
-                    ->addIndexColumn()
-                    ->make(true);
-            }
+            $data['status'] = ($data['status'] ?? null) === 'draft' ? 'draft' : 'review';
+            unset($data['published_at']);
+        }
+
+        return $data;
+    }
+
+    private function syncTags(Blog $blog, ?string $tags): void
+    {
+        $ids = collect(explode(',', (string) $tags))->map(fn ($t) => trim($t))->filter()->unique(fn ($t) => Str::slug($t))
+            ->map(fn ($name) => Tag::firstOrCreate(['slug' => Str::slug($name)], ['name' => $name])->id);
+        $blog->tags()->sync($ids);
+    }
+
+    /** 8.13: email "blog menunggu review" ke editor saat tulisan masuk antrean. */
+    private function notifyReviewers(Blog $blog, ?string $before): void
+    {
+        if ($blog->status === 'review' && $before !== 'review') {
+            Notification::send(User::permission('blog-publish')->where('is_active', true)->get(), new BlogAwaitingReview($blog));
         }
     }
 
-    /** B5: penulis non-penerbit selalu kembali ke antrean review (0), apa pun isi request. */
-    private function publicationStatus(Request $request): int
+    private function statusMessage(Blog $blog): string
     {
-        return $request->user()->can('publish', Blog::class) ? (int) $request->boolean('publication_status') : 0;
-    }
-
-    /**
-     * Validate request
-     */
-    public function validate_request($request)
-    {
-        $request->validate([
-            'title' => 'required|string|max:300',
-            'publication_status' => 'nullable|boolean',
-            'body' => 'required|string'
-        ]);
+        return match ($blog->status) {
+            'published' => 'Tulisan diterbitkan.',
+            'review' => 'Tulisan disimpan dan menunggu review editor.',
+            default => 'Draf disimpan.',
+        };
     }
 }

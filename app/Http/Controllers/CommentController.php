@@ -4,100 +4,35 @@ namespace App\Http\Controllers;
 
 use App\Models\Comment;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Session;
-use Illuminate\Support\Facades\Auth;
 
+/** Ubah/hapus komentar forum: pemilik atau moderator (B3, PRD 8.7). */
 class CommentController extends Controller
 {
     public function __construct()
     {
-        // B3: sebelumnya tanpa cek akses sama sekali
         $this->middleware(['permission:comment-update'])->only(['edit', 'update']);
         $this->middleware(['permission:comment-delete'])->only(['destroy']);
         $this->authorizeResource(Comment::class, 'comment');
     }
 
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function index()
-    {
-        //
-    }
-
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request $request
-     * @return \Illuminate\Http\Response
-     */
-    public function store(Request $request)
-    {
-        //
-    }
-
-    /**
-     * Display the specified resource.
-     *
-     * @param  \App\Models\Comment  $comment
-     * @return \Illuminate\Http\Response
-     */
-    public function show(Comment $comment)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  \App\Models\Comment  $comment
-     * @return \Illuminate\Http\Response
-     */
     public function edit(Comment $comment)
     {
-        return view('dashboard.comment.edit', compact('comment'));
+        return view('dashboard.comment.edit', ['comment' => $comment->load('thread')]);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request $request
-     * @return \Illuminate\Http\Response
-     */
     public function update(Request $request, Comment $comment)
     {
-        $request->validate([
-            'body' => 'required|string'
-        ]);
+        $comment->update($request->validate(['body' => 'required|string|max:5000']));
 
-        $comment->body = $request->input('body');
-        $comment->save();
-
-        return redirect()->route('comment.edit', $comment->id)->with('success', 'Komentar telah diubah.');
+        return redirect()->to(route('site.forum.show', $comment->thread->slug) . '#komentar-' . $comment->id)->with('success', 'Komentar diubah.');
     }
 
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  \App\Models\Comment  $comment
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy(Comment $comment)
+    public function destroy(Request $request, Comment $comment)
     {
-        Session::flash('success', 'Komentar telah dihapus.');
-
         $comment->delete();
+
+        return $request->expectsJson()
+            ? response()->noContent()
+            : redirect()->route('site.forum.show', $comment->thread->slug)->with('success', 'Komentar dihapus.');
     }
 }

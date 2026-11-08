@@ -3,168 +3,109 @@
 namespace App\Http\Controllers;
 
 use App\Models\Research;
+use App\Support\Upload;
 use Illuminate\Http\Request;
-use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\Session;
+use Illuminate\Validation\Rule;
 use Yajra\DataTables\Facades\DataTables;
 
+/** Jurnal (PRD 8.8): dikelola editor/admin PD. */
 class ResearchController extends Controller
 {
     public function __construct()
     {
-        $this->middleware(['permission:research-view'])->only(['index', 'datatable']);
-        $this->middleware(['permission:research-create'])->only(['create', 'store']);
-        $this->middleware(['permission:research-update'])->only(['edit', 'update']);
-        $this->middleware(['permission:research-delete'])->only(['destroy']);
+        $this->middleware('permission:research-view')->only(['index', 'show', 'datatable']);
         $this->authorizeResource(Research::class, 'research');
     }
 
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
     public function index()
     {
         return view('dashboard.research.index');
     }
 
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
-    {
-        return view('dashboard.research.create');
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request $request
-     * @return \Illuminate\Http\Response
-     */
-    public function store(Request $request)
-    {
-        $this->validate_request($request);
-        $request->validate([
-            'file' => 'required|file|max:3048|mimes:pdf'
-        ]);
-        $docFile = $request->file('file');
-        $docName = $docFile->hashName();
-        Storage::putFileAs('public/research', $docFile, $docName);
-
-        Research::create([
-            'title' => $request->input('title'),
-            'date_of_publish' => $request->input('date_of_publish'),
-            'file' => $docName
-        ]);
-
-        return redirect()->route('research.create')->with('success', 'Jurnal berhasil ditambahkan.');
-    }
-
-    /**
-     * Display the specified resource.
-     *
-     * @param  \App\Models\Research  $research
-     * @return \Illuminate\Http\Response
-     */
-    public function show(Research $research)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  \App\Models\Research  $research
-     * @return \Illuminate\Http\Response
-     */
-    public function edit(Research $research)
-    {
-        return view('dashboard.research.edit', compact('research'));
-    }
-
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\Research  $research
-     * @return \Illuminate\Http\Response
-     */
-    public function update(Request $request, Research  $research)
-    {
-        $this->validate_request($request);
-
-        if ($request->hasFile('file')) {
-            $request->validate([
-                'file' => 'required|file|max:3048|mimes:pdf'
-            ]);
-
-            if (Storage::exists('public/research/' . $research->file)) {
-                Storage::delete('public/research/' . $research->file);
-            }
-            $docFile = $request->file('file');
-            $docName = $docFile->hashName();
-            Storage::putFileAs('public/research', $docFile, $docName);
-
-            $research->file = $docName;
-        }
-
-        $research->title = $request->input('title');
-        $research->date_of_publish = $request->input('date_of_publish');
-        $research->save();
-
-        return redirect()->route('research.edit', $research->id)->with('success', 'Jurnal telah diubah.');
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  \App\Models\Research  $research
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy(Research $research)
-    {
-        Session::flash('success', 'Jurnal ' . $research->title . ' telah dihapus.');
-
-        if (Storage::exists('public/research/' . $research->file)) {
-            Storage::delete('public/research/' . $research->file);
-        }
-
-        $research->delete();
-    }
-
-
-    /**
-     * Yajra datatable
-     */
     public function datatable(Request $request)
     {
-        if ($request->ajax()) {
-            $researches = Research::select('research.*');
-
-            return DataTables::eloquent($researches)
-                ->addColumn('action', function ($research) {
-                    return view('dashboard.research.action', compact('research'))->render();
-                })
-                ->rawColumns(['action'])
-                ->addIndexColumn()
-                ->make(true);
-        }
+        return DataTables::eloquent(Research::query())
+            ->editColumn('date_of_publish', fn ($r) => $r->date_of_publish?->translatedFormat('d M Y'))
+            ->editColumn('status', fn ($r) => $r->status === 'published' ? 'Terbit' : 'Draf')
+            ->addColumn('action', fn ($r) => view('components.dashboard.row-actions', [
+                'show' => $r->status === 'published' ? route('site.journal.show', $r->slug) : null,
+                'edit' => $request->user()->can('update', $r) ? route('research.edit', $r) : null,
+                'delete' => $request->user()->can('delete', $r) ? route('research.destroy', $r) : null,
+                'confirm' => null,
+            ])->render())
+            ->rawColumns(['action'])
+            ->addIndexColumn()
+            ->make(true);
     }
 
-
-    /**
-     * Validate request
-     */
-    public function validate_request($request)
+    public function create()
     {
-        $request->validate([
+        return view('dashboard.research.form', ['research' => new Research(['status' => 'published', 'date_of_publish' => now()]), 'categories' => $this->categories()]);
+    }
+
+    public function store(Request $request)
+    {
+        Research::create($this->validated($request) + ['uploaded_by' => $request->user()->id]);
+
+        return redirect()->route('research.index')->with('success', 'Jurnal ditambahkan.');
+    }
+
+    public function show(Research $research)
+    {
+        return redirect()->route('research.edit', $research);
+    }
+
+    public function edit(Research $research)
+    {
+        return view('dashboard.research.form', ['research' => $research, 'categories' => $this->categories()]);
+    }
+
+    public function update(Request $request, Research $research)
+    {
+        $research->update($this->validated($request, $research));
+
+        return redirect()->route('research.edit', $research)->with('success', 'Jurnal diubah.');
+    }
+
+    public function destroy(Research $research)
+    {
+        $research->delete(); // soft delete
+        session()->flash('success', 'Jurnal dihapus.');
+
+        return response()->noContent();
+    }
+
+    private function validated(Request $request, ?Research $research = null): array
+    {
+        $data = $request->validate([
             'title' => 'required|string|max:255',
-            'date_of_publish' => 'required|date'
+            'authors' => 'nullable|string|max:255',
+            'abstract' => 'nullable|string|max:5000',
+            'keywords' => 'nullable|string|max:255',
+            'category' => 'nullable|string|max:100',
+            'date_of_publish' => 'required|date',
+            'status' => ['required', Rule::in(['draft', 'published'])],
+            'file' => ($research ? 'nullable|' : 'required|') . Upload::PDF_RULE,
+            'cover' => 'nullable|' . Upload::IMAGE_RULE,
         ]);
+        unset($data['file'], $data['cover']);
+        // PDF di disk privat: hanya bisa diunduh lewat route penghitung bila terbit (PRD 8.8 AC)
+        if ($request->hasFile('file')) {
+            $data['file'] = $request->file('file')->store('research', 'local');
+            if ($research?->file) {
+                Storage::disk('local')->delete($research->file);
+            }
+        }
+        if ($request->hasFile('cover')) {
+            $data['cover'] = Upload::store($request->file('cover'), 'research/covers', $research?->cover);
+        }
+
+        return $data;
+    }
+
+    private function categories()
+    {
+        return Research::whereNotNull('category')->distinct()->orderBy('category')->pluck('category');
     }
 }

@@ -23,11 +23,13 @@ class BlogFactory extends Factory
     public function definition()
     {
         return [
-            'title' => $this->faker->title,
-            'slug' => $this->faker->slug,
-            'body' => $this->faker->sentence,
-            'thumbnail' => $this->faker->word,
-            'publication_status' => $this->faker->boolean(),
+            'title' => rtrim($this->faker->sentence(6), '.'),
+            'excerpt' => $this->faker->sentence(18),
+            'body' => '<p>' . implode('</p><p>', $this->faker->paragraphs(4)) . '</p>',
+            'thumbnail' => null,
+            'status' => 'published',
+            'published_at' => $this->faker->dateTimeBetween('-6 months'),
+            'category_id' => fn () => \App\Models\Category::inRandomOrder()->value('id'),
             'user_id' => User::inRandomOrder()->first()
         ];
     }

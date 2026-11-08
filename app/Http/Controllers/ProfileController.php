@@ -40,7 +40,13 @@ class ProfileController extends Controller
         $date_of_birth->settings(['formatFunction' => 'translatedFormat']);
         $date_of_birth->format('j F Y');
 
-        return view('dashboard.profile.index', compact('user', 'counter', 'date_of_birth', 'member'));
+        // 8.11: Tulisan saya
+        $writings = [
+            'blogs' => $user->blogs()->latest()->take(20)->get(),
+            'threads' => $user->threads()->latest()->take(20)->get(),
+        ];
+
+        return view('dashboard.profile.index', compact('user', 'counter', 'date_of_birth', 'member', 'writings'));
     }
 
     /**
@@ -87,6 +93,14 @@ class ProfileController extends Controller
         $user->save();
 
         return redirect()->route('profile.index')->with('success', 'Informasi akun telah diubah.');
+    }
+
+    /** Preferensi notifikasi (PRD 8.7, 8.11). */
+    public function notifications(Request $request)
+    {
+        $request->user()->update(['notify_forum_replies' => $request->boolean('notify_forum_replies')]);
+
+        return redirect()->route('profile.index')->with('success', 'Preferensi notifikasi disimpan.');
     }
 
     /**

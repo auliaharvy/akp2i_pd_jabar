@@ -27,7 +27,11 @@
                 <x-site.section-heading eyebrow="Kabar Terbaru" title="Berita & Artikel" class="mb-0" />
                 <a href="{{ route('site.news') }}" class="inline-flex items-center gap-1 font-semibold text-brand-secondary">Semua berita <x-site.icon name="arrow-right" class="h-4 w-4" /></a>
             </div>
-            <x-site.empty-state title="Berita segera hadir" icon="document" class="mt-8">Modul berita sedang disiapkan.</x-site.empty-state>
+            @if ($news->isEmpty())
+                <x-site.empty-state title="Belum ada berita" icon="document" class="mt-8" />
+            @else
+                <div class="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">@foreach ($news as $blog)<x-site.card-post :blog="$blog" />@endforeach</div>
+            @endif
         </div>
     </section>
 

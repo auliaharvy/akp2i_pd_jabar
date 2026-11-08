@@ -19,6 +19,7 @@ class DatabaseSeeder extends Seeder
             PositionSeeder::class,
             UserSeeder::class,
             MemberSeeder::class,
+            ContentTaxonomySeeder::class,
             BlogSeeder::class,
             ResearchSeeder::class,
             ThreadSeeder::class,

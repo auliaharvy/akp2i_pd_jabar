@@ -39,7 +39,7 @@ class AuthorizationTest extends TestCase
         return array_merge([
             'title' => 'Judul',
             'body' => 'Isi',
-            'publication_status' => 1,
+            'status' => 'published',
             'thumbnail' => UploadedFile::fake()->image('a.jpg'),
         ], $override);
     }
@@ -108,14 +108,14 @@ class AuthorizationTest extends TestCase
     {
         $blog = Blog::factory()->create(['user_id' => $this->anotherAnggota()->id]);
 
-        $this->actingAs($this->user('editor@mail.com'))->delete(route('blog.destroy', $blog))->assertOk();
-        $this->assertModelMissing($blog);
+        $this->actingAs($this->user('editor@mail.com'))->delete(route('blog.destroy', $blog))->assertNoContent();
+        $this->assertSoftDeleted($blog); // M3: blog soft delete
     }
 
     public function test_b2_thread_update_by_other_is_forbidden_and_owner_keeps_user_id()
     {
         $owner = $this->user('member@mail.com');
-        $thread = Thread::factory()->create(['user_id' => $owner->id, 'publication_status' => 1]);
+        $thread = Thread::factory()->create(['user_id' => $owner->id]);
 
         $this->actingAs($this->anotherAnggota())
             ->patch(route('thread.update', $thread), ['title' => 'x', 'body' => 'y'])
@@ -123,7 +123,7 @@ class AuthorizationTest extends TestCase
 
         // moderator mengedit: user_id tetap milik penulis
         $this->actingAs($this->user('editor@mail.com'))
-            ->patch(route('thread.update', $thread), ['title' => 'Diedit', 'body' => 'y', 'publication_status' => 1])
+            ->patch(route('thread.update', $thread), ['title' => 'Diedit', 'body' => 'y'])
             ->assertSessionHasNoErrors();
         $this->assertSame($owner->id, $thread->fresh()->user_id);
         $this->assertSame('Diedit', $thread->fresh()->title);
@@ -148,26 +148,26 @@ class AuthorizationTest extends TestCase
 
         $this->actingAs($member)->post(route('blog.store'), $this->blogPayload())->assertSessionHasNoErrors();
         $blog = Blog::where('user_id', $member->id)->latest('id')->firstOrFail();
-        $this->assertSame(0, (int) $blog->publication_status);
+        $this->assertSame('review', $blog->status);
 
         $this->actingAs($member)->patch(route('blog.update', $blog), $this->blogPayload(['thumbnail' => null]))->assertSessionHasNoErrors();
-        $this->assertSame(0, (int) $blog->fresh()->publication_status);
+        $this->assertSame('review', $blog->fresh()->status);
     }
 
     public function test_b5_editor_can_publish_blog()
     {
         $this->actingAs($this->user('editor@mail.com'))->post(route('blog.store'), $this->blogPayload())->assertSessionHasNoErrors();
 
-        $this->assertSame(1, (int) Blog::latest('id')->first()->publication_status);
+        $this->assertSame('published', Blog::latest('id')->first()->status);
     }
 
     public function test_b5_anggota_cannot_hide_or_change_thread_status()
     {
         $member = $this->user('member@mail.com');
-        $this->actingAs($member)->post(route('thread.store'), ['title' => 'T', 'body' => 'B', 'publication_status' => 0]);
+        $this->actingAs($member)->post(route('thread.store'), ['title' => 'T', 'body' => 'B', 'status' => 'hidden']);
         $thread = Thread::where('user_id', $member->id)->latest('id')->firstOrFail();
 
-        $this->assertSame(1, (int) $thread->publication_status);
+        $this->assertSame('published', $thread->status);
     }
 
     public function test_b4_admin_pd_cannot_escalate_to_super_admin_or_admin_pd()

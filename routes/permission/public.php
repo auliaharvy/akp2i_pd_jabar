@@ -1,6 +1,9 @@
 <?php
 
 use App\Http\Controllers\SiteController;
+use App\Http\Controllers\Site\ForumController;
+use App\Http\Controllers\Site\JournalController;
+use App\Http\Controllers\Site\NewsController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -30,20 +33,37 @@ Route::controller(SiteController::class)->name('site.')->group(function () {
     Route::get('syarat-ketentuan', 'terms')->name('terms');
     Route::get('halaman/{slug}', 'page')->name('page');
 
-    # Menyusul M3/M4: tampil empty state
+    # Menyusul M4: tampil empty state
     $soon = fn (string $uri, string $name, string $title, string $milestone) => Route::get($uri, 'comingSoon')
         ->name($name)->defaults('title', $title)->defaults('milestone', $milestone);
     $soon('pelatihan', 'training', 'Pusat Pelatihan', 'M4');
     $soon('pelatihan/{slug}', 'training.show', 'Pusat Pelatihan', 'M4');
-    $soon('berita', 'news', 'Berita & Artikel', 'M3');
-    $soon('berita/{slug}', 'news.show', 'Berita & Artikel', 'M3');
-    $soon('jurnal', 'journal', 'Jurnal', 'M3');
-    $soon('jurnal/{slug}', 'journal.show', 'Jurnal', 'M3');
-    $soon('forum', 'forum', 'Forum Diskusi', 'M3');
-    $soon('forum/{slug}', 'forum.show', 'Forum Diskusi', 'M3');
     $soon('sertifikat/{kode}', 'certificate', 'Verifikasi Sertifikat', 'M4');
 
     # SEO
     Route::get('sitemap.xml', 'sitemap')->name('sitemap');
     Route::get('robots.txt', 'robots')->name('robots');
+});
+
+/*
+| Berita, Forum, Jurnal (M3)
+*/
+Route::name('site.')->group(function () {
+    Route::controller(NewsController::class)->group(function () {
+        Route::get('berita', 'index')->name('news');
+        Route::get('berita/kategori/{category:slug}', 'category')->name('news.category');
+        Route::get('berita/tag/{tag:slug}', 'tag')->name('news.tag');
+        Route::get('berita/{slug}', 'show')->name('news.show');
+    });
+    Route::controller(ForumController::class)->group(function () {
+        Route::get('forum', 'index')->name('forum');
+        Route::post('forum/laporan', 'report')->middleware('auth')->name('forum.report');
+        Route::get('forum/{slug}', 'show')->name('forum.show');
+        Route::post('forum/{slug}/komentar', 'comment')->middleware(['auth', 'throttle:comments'])->name('forum.comment');
+    });
+    Route::controller(JournalController::class)->group(function () {
+        Route::get('jurnal', 'index')->name('journal');
+        Route::get('jurnal/{slug}', 'show')->name('journal.show');
+        Route::get('jurnal/{slug}/unduh', 'download')->name('journal.download');
+    });
 });

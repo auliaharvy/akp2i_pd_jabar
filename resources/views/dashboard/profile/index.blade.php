@@ -122,6 +122,10 @@
                             href="#tab_sertifikat">Sertifikat</a>
                     </li>
                     <li class="nav-item">
+                        <a class="nav-link text-active-primary pb-4" data-bs-toggle="tab"
+                            href="#tab_tulisan">Tulisan & Notifikasi</a>
+                    </li>
+                    <li class="nav-item">
                         <a class="nav-link text-active-primary pb-4" data-kt-countup-tabs="true" data-bs-toggle="tab"
                             href="#tab_profil">Ubah Profil</a>
                     </li>
@@ -346,6 +350,10 @@
                         </form>
                     </div>
                     {{-- End::Tab Profil --}}
+
+                    <div class="tab-pane fade" id="tab_tulisan" role="tabpanel">
+                        @include('dashboard.profile.writings')
+                    </div>
 
                     {{-- Start::Tab Keamanan --}}
                     <div class="tab-pane fade" id="tab_keamanan" role="tabpanel">

@@ -68,5 +68,7 @@ class RouteServiceProvider extends ServiceProvider
         // PRD 8.5 & 7: form kontak 5/menit/IP, cek anggota 10/menit/IP
         RateLimiter::for('contact', fn (Request $request) => Limit::perMinute(5)->by($request->ip()));
         RateLimiter::for('member-check', fn (Request $request) => Limit::perMinute(10)->by($request->ip()));
+        // PRD 8.7: 10 komentar/menit/user
+        RateLimiter::for('comments', fn (Request $request) => Limit::perMinute(10)->by($request->user()?->id ?: $request->ip()));
     }
 }
