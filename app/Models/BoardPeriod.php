@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\FlushesSiteCache;
 use App\Models\Concerns\LogsActivity;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -9,7 +10,7 @@ use Illuminate\Support\Facades\DB;
 
 class BoardPeriod extends Model
 {
-    use HasFactory, LogsActivity;
+    use FlushesSiteCache, HasFactory, LogsActivity;
 
     protected $fillable = ['organization_id', 'name', 'starts_at', 'ends_at', 'is_active', 'sk_number', 'sk_file'];
 

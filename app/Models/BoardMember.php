@@ -2,12 +2,13 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\FlushesSiteCache;
 use App\Models\Concerns\LogsActivity;
 use Illuminate\Database\Eloquent\Model;
 
 class BoardMember extends Model
 {
-    use LogsActivity;
+    use FlushesSiteCache, LogsActivity;
 
     protected $fillable = ['board_period_id', 'user_id', 'division_id', 'position_id', 'sort_order'];
 

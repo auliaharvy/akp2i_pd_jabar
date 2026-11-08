@@ -2,106 +2,60 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Member;
 use App\Models\Setting;
+use App\Support\Upload;
 use Illuminate\Http\Request;
 
+/** Pengaturan situs (PRD 8.5), satu baris. */
 class SettingController extends Controller
 {
     public function __construct()
     {
-        $this->middleware(['role:super_administrator|admin_pd']);
         $this->authorizeResource(Setting::class, 'setting');
     }
 
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function index()
-    {
-        //
-    }
-
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \App\Http\Requests\Request  $request
-     * @return \Illuminate\Http\Response
-     */
-    public function store(Request $request)
-    {
-        //
-    }
-
-    /**
-     * Display the specified resource.
-     *
-     * @param  \App\Models\Setting  $setting
-     * @return \Illuminate\Http\Response
-     */
-    public function show(Setting $setting)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  \App\Models\Setting  $setting
-     * @return \Illuminate\Http\Response
-     */
     public function edit(Setting $setting)
     {
         return view('dashboard.setting.edit', compact('setting'));
     }
 
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \App\Http\Requests\Request  $request
-     * @param  \App\Models\Setting  $setting
-     * @return \Illuminate\Http\Response
-     */
     public function update(Request $request, Setting $setting)
     {
-        $request->validate([
+        $data = $request->validate([
+            'site_name' => 'required|string|max:100',
+            'tagline' => 'nullable|string|max:255',
             'email' => 'required|email|max:255',
-            'phone' => 'required|string|max:255',
-            'address' => 'required|string',
-            'instagram' => 'required|string',
+            'phone' => 'nullable|string|max:30',
+            'whatsapp' => 'nullable|string|max:30',
+            'address' => 'nullable|string|max:255',
+            'maps_embed' => ['nullable', 'string', 'max:2000', 'regex:#^https://www\.google\.com/maps/embed\?#'],
+            'facebook' => 'nullable|url|max:255',
+            'instagram' => 'nullable|url|max:255',
+            'youtube' => 'nullable|url|max:255',
+            'linkedin' => 'nullable|url|max:255',
+            'url_registration' => 'required|url|max:255',
+            'url_member_service' => 'required|url|max:255',
+            'url_ejournal' => 'nullable|url|max:255',
+            'bank_account_info' => 'nullable|string|max:1000',
+            'logo' => 'nullable|' . Upload::IMAGE_RULE,
+            'logo_footer' => 'nullable|' . Upload::IMAGE_RULE,
+            'favicon' => 'nullable|image|mimes:png,ico,webp|max:512',
             'dues_amounts' => 'nullable|array',
             'dues_amounts.*' => 'nullable|numeric|min:0',
-        ]);
+        ], ['maps_embed.regex' => 'Tempel URL "src" dari Google Maps → Bagikan → Sematkan peta (diawali https://www.google.com/maps/embed?).']);
 
-        $setting->email = $request->input('email');
-        $setting->phone = $request->input('phone');
-        $setting->address = $request->input('address');
-        $setting->instagram = $request->input('instagram');
-        $setting->dues_amounts = array_map(fn ($v) => $v === null ? null : (int) $v, $request->input('dues_amounts', []));
-        $setting->save();
+        foreach (Setting::IMAGES as $field) {
+            unset($data[$field]);
+            if ($request->hasFile($field)) {
+                $data[$field] = Upload::store($request->file($field), 'settings', $setting->{$field}, 600);
+            }
+        }
+        $data['dues_amounts'] = collect(Member::TYPES)->keys()
+            ->mapWithKeys(fn ($type) => [$type => filled($request->input("dues_amounts.{$type}")) ? (int) $request->input("dues_amounts.{$type}") : null])->all();
 
-        return redirect()->route('setting.edit', '1')->with('success', 'Pengaturan telah diubah.');
-    }
+        $setting->update($data);
 
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  \App\Models\Setting  $setting
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy(Setting $setting)
-    {
-        //
+        return redirect()->route('setting.edit', $setting)->with('success', 'Pengaturan telah diubah.');
     }
 }

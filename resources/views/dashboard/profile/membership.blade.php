@@ -3,7 +3,7 @@
     <div class="card-header">
         <div class="card-title fs-3 fw-bolder">Keanggotaan</div>
         <div class="card-toolbar">
-            <a class="btn btn-sm btn-light-primary" href="{{ config('akp2i.urls.member_service') }}" target="_blank" rel="noopener">
+            <a class="btn btn-sm btn-light-primary" href="{{ App\Models\Setting::current()->url_member_service }}" target="_blank" rel="noopener">
                 Layanan Anggota (perpanjangan KTA, legalisir SK) <i class="fa fa-external-link-alt ms-1"></i>
             </a>
         </div>

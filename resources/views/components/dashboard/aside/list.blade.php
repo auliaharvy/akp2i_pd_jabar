@@ -32,6 +32,9 @@
                     <span class="menu-title">Beranda</span>
                 </a>
             </div>
+            <x-dashboard.aside.single_menu title="Lihat Situs" url="{{ route('site.home') }}">
+                <x-slot name="icon"><i class="fa fa-globe fs-5"></i></x-slot>
+            </x-dashboard.aside.single_menu>
             <!-- End::Dashboard -->
 
             <!-- Start::Data Postingan -->
@@ -142,6 +145,30 @@
             @endcan
             @endcanany
             <!-- End::Data Kegiatan -->
+
+            <!-- Start::Website (M2) -->
+            @canany(['page-view', 'slider-view', 'gallery-view', 'document-view', 'contact-message-view'])
+            <div class="menu-item pt-5">
+                <div class="menu-content pb-2">
+                    <span class="menu-section text-muted text-uppercase fs-7 fw-bolder">Website</span>
+                </div>
+            </div>
+            @php($m2Menu = [
+                ['page-view', 'page.*', 'page.index', 'Halaman', 'fa-file-alt'],
+                ['slider-view', 'slider.*', 'slider.index', 'Slider Beranda', 'fa-images'],
+                ['gallery-view', 'gallery.*', 'gallery.index', 'Galeri', 'fa-camera'],
+                ['document-view', 'document.*', 'document.index', 'Dokumen', 'fa-file-pdf'],
+                ['contact-message-view', 'contact-message.*', 'contact-message.index', 'Pesan Masuk', 'fa-envelope'],
+            ])
+            @foreach ($m2Menu as [$permission, $pattern, $route, $title, $icon])
+                @can($permission)
+                <x-dashboard.aside.single_menu linkClass="{{ request()->routeIs($pattern) ? 'active' : '' }}" :title="$title" url="{{ route($route) }}">
+                    <x-slot name="icon"><i class="fa {{ $icon }} fs-5"></i></x-slot>
+                </x-dashboard.aside.single_menu>
+                @endcan
+            @endforeach
+            @endcanany
+            <!-- End::Website -->
 
             <!-- Start::Data Organisasi (M1) -->
             @canany(['organization-view', 'member-view', 'board-view'])
@@ -280,7 +307,7 @@
             @can('setting-view')
             {{-- Start::Aplikasi --}}
             <x-dashboard.aside.single_menu linkClass="{{ $settingMenu }}" title="Aplikasi"
-                url="{{ route('setting.edit', 1) }}">
+                url="{{ route('setting.edit', App\Models\Setting::current()) }}">
                 <x-slot name="icon">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
                         <path opacity="0.3" d="M5 8.04999L11.8 11.95V19.85L5 15.85V8.04999Z" fill="black" />

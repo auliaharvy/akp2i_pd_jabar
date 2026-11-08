@@ -123,7 +123,7 @@ class M0BugFixTest extends TestCase
 
     public function test_b9_root_and_logout_do_not_404()
     {
-        $this->get('/')->assertRedirect('/login');
+        $this->get('/')->assertOk(); // M2: beranda publik menggantikan redirect sementara
         $this->actingAs($this->user('member@mail.com'))->post('/logout')->assertRedirect('/');
     }
 

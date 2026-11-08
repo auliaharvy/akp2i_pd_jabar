@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\FlushesSiteCache;
 use App\Models\Concerns\LogsActivity;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -10,7 +11,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Member extends Model
 {
-    use HasFactory, LogsActivity, SoftDeletes;
+    use FlushesSiteCache, HasFactory, LogsActivity, SoftDeletes;
 
     public const TYPES = ['utama' => 'Utama', 'madya' => 'Madya', 'pratama' => 'Pratama', 'kehormatan' => 'Kehormatan'];
 

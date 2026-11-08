@@ -9,17 +9,22 @@ use App\Http\Controllers\MemberImportController;
 use App\Http\Controllers\MembershipController;
 use App\Http\Controllers\BlogController;
 use App\Http\Controllers\CommentController;
+use App\Http\Controllers\ContactMessageController;
+use App\Http\Controllers\DocumentController;
+use App\Http\Controllers\GalleryController;
 use App\Http\Controllers\DivisionController;
 use App\Http\Controllers\EventController;
 use App\Http\Controllers\GeneralController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\OrganizationController;
+use App\Http\Controllers\PageController;
 use App\Http\Controllers\MemberController;
 use App\Http\Controllers\ParticipantController;
 use App\Http\Controllers\PositionController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ResearchController;
 use App\Http\Controllers\SettingController;
+use App\Http\Controllers\SliderController;
 use App\Http\Controllers\SuspensionController;
 use App\Http\Controllers\ThreadController;
 use Illuminate\Support\Facades\Route;
@@ -112,6 +117,25 @@ Route::middleware('auth:sanctum')->prefix('dashboard')->group(function () {
 
     # Aplikasi
     Route::resource('setting', SettingController::class)->only(['edit', 'update']);
+
+    /*
+    |--------------------------------------------------------
+    | Website / CMS (M2)
+    |--------------------------------------------------------
+    */
+    Route::get('page-datatable', [PageController::class, 'datatable'])->name('page.datatable');
+    Route::resource('page', PageController::class)->only(['index', 'edit', 'update']);
+    Route::get('slider-datatable', [SliderController::class, 'datatable'])->name('slider.datatable');
+    Route::resource('slider', SliderController::class)->except('show');
+    Route::get('gallery-datatable', [GalleryController::class, 'datatable'])->name('gallery.datatable');
+    Route::post('gallery/{gallery}/photos', [GalleryController::class, 'storePhotos'])->name('gallery.photos.store');
+    Route::patch('gallery/{gallery}/photos', [GalleryController::class, 'updatePhotos'])->name('gallery.photos.update');
+    Route::delete('gallery-photo/{photo}', [GalleryController::class, 'destroyPhoto'])->name('gallery.photos.destroy');
+    Route::resource('gallery', GalleryController::class)->except('show');
+    Route::get('document-datatable', [DocumentController::class, 'datatable'])->name('document.datatable');
+    Route::resource('document', DocumentController::class)->except('show');
+    Route::get('contact-message-datatable', [ContactMessageController::class, 'datatable'])->name('contact-message.datatable');
+    Route::resource('contact-message', ContactMessageController::class)->only(['index', 'show', 'destroy']);
 
     # Log aktivitas (PRD 8.13)
     Route::get('log-aktivitas', [ActivityLogController::class, 'index'])->name('activity-log.index');

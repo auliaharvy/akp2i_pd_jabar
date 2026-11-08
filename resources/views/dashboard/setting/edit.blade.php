@@ -1,100 +1,60 @@
-<x-dashboard.layout>
-    {{-- Start::Head component --}}
-    <x-slot name="title">Pengaturan</x-slot>
-    {{-- End::Head component --}}
-
-    {{-- Start::Toolbar component --}}
-    <x-slot name="toolbar">
-        <x-dashboard.toolbar.main>
-            <x-slot name="title">Pengaturan</x-slot>
-
-            <x-slot name="breadcrumb">
-                <li class="breadcrumb-item text-muted">
-                    <span class="text-muted">Pengaturan</span>
-                </li>
-                <li class="breadcrumb-item">
-                    <span class="bullet bg-gray-200 w-5px h-2px"></span>
-                </li>
-                <li class="breadcrumb-item text-muted">Aplikasi</li>
-                <li class="breadcrumb-item">
-                    <span class="bullet bg-gray-200 w-5px h-2px"></span>
-                </li>
-                <li class="breadcrumb-item">Ubah Pengaturan Aplikasi</li>
-            </x-slot>
-        </x-dashboard.toolbar.main>
-    </x-slot>
-    {{-- End::Toolbar component --}}
-
-    {{-- Start::Post component --}}
-    <x-slot name="post">
-        {{-- Start::Alert component --}}
-        <x-dashboard.alert.success />
-        <x-dashboard.alert.error />
-        {{-- End::Alert Component --}}
-
-        {{-- Start::Content --}}
-        <form class="form" action="{{ route('setting.update', $setting->id) }}" method="POST"
-            enctype="multipart/form-data" autocomplete="off">
-            @csrf
-            @method('PUT')
-
-            <div class="card">
-                <div class="card-header">
-                    <div class="card-title fs-3 fw-bolder">Ubah Pengaturan Aplikasi</div>
-                    <div class="card-toolbar">
-                        <a class="btn btn-sm btn-light-primary fw-bolder" href="#">
-                            <i class="fa fa-arrow-left"></i>
-                            Kembali
-                        </a>
+<x-dashboard.page title="Pengaturan Aplikasi" :crumbs="['Pengaturan', 'Aplikasi']">
+    <form method="POST" action="{{ route('setting.update', $setting) }}" enctype="multipart/form-data">
+        @csrf @method('PATCH')
+        <div class="row g-5">
+            <div class="col-xl-6">
+                <div class="card h-100">
+                    <div class="card-header"><div class="card-title fs-4 fw-bolder">Identitas & Kontak</div></div>
+                    <div class="card-body">
+                        <x-dashboard.field name="site_name" label="Nama situs" :value="$setting->site_name" required />
+                        <x-dashboard.field name="tagline" label="Tagline / deskripsi singkat (footer & SEO)" :value="$setting->tagline" />
+                        <div class="row">
+                            <div class="col-md-6"><x-dashboard.field name="email" label="Email sekretariat (penerima pesan kontak)" type="email" :value="$setting->email" required /></div>
+                            <div class="col-md-6"><x-dashboard.field name="phone" label="Telepon" :value="$setting->phone" /></div>
+                            <div class="col-md-6"><x-dashboard.field name="whatsapp" label="WhatsApp" :value="$setting->whatsapp" placeholder="0812..." /></div>
+                        </div>
+                        <x-dashboard.field name="address" label="Alamat sekretariat" :value="$setting->address" />
+                        <x-dashboard.field name="maps_embed" label="URL embed Google Maps" type="textarea" :value="$setting->maps_embed" help="Google Maps → Bagikan → Sematkan peta → salin isi atribut src." />
                     </div>
-                </div>
-
-                <div class="card-body">
-                    <div class="mb-6">
-                        <label class="form-label required">Email</label>
-                        <input class="form-control" type="email" name="email" value="{{ $setting->email }}" required>
-                    </div>
-                    <div class="mb-6">
-                        <label class="form-label required">Nomor Telepon</label>
-                        <input class="form-control" type="tel" name="phone" value="{{ $setting->phone }}" required>
-                    </div>
-                    <div class="mb-6">
-                        <label class="form-label required">Alamat</label>
-                        <input class="form-control" type="text" name="address" value="{{ $setting->address }}" required>
-                    </div>
-                    <div class="mb-6">
-                        <label class="form-label required">Instagram (Link)</label>
-                        <input class="form-control" type="text" name="instagram" value="{{ $setting->instagram }}"
-                            required>
-                    </div>
-                    <div class="fw-bolder fs-5 mt-8 mb-4">Iuran tahunan default (Rp)</div>
-                    <div class="row">
-                        @foreach (App\Models\Member::TYPES as $type => $label)
-                            <div class="col-sm-6 col-lg-3">
-                                <x-dashboard.field name="dues_amounts[{{ $type }}]" :label="$label" type="number" min="0" :value="$setting->dues_amounts[$type] ?? null" />
-                            </div>
-                        @endforeach
-                    </div>
-                </div>
-
-                <div class="card-footer d-flex justify-content-end py-6">
-                    <button type="submit" class="btn btn-sm btn-success">
-                        <span class="svg-icon svg-icon-success svg-icon-2"><svg xmlns="http://www.w3.org/2000/svg"
-                                width="24" height="24" viewBox="0 0 24 24" fill="none">
-                                <path opacity="0.3" fill-rule="evenodd" clip-rule="evenodd"
-                                    d="M2 4.63158C2 3.1782 3.1782 2 4.63158 2H13.47C14.0155 2 14.278 2.66919 13.8778 3.04006L12.4556 4.35821C11.9009 4.87228 11.1726 5.15789 10.4163 5.15789H7.1579C6.05333 5.15789 5.15789 6.05333 5.15789 7.1579V16.8421C5.15789 17.9467 6.05333 18.8421 7.1579 18.8421H16.8421C17.9467 18.8421 18.8421 17.9467 18.8421 16.8421V13.7518C18.8421 12.927 19.1817 12.1387 19.7809 11.572L20.9878 10.4308C21.3703 10.0691 22 10.3403 22 10.8668V19.3684C22 20.8218 20.8218 22 19.3684 22H4.63158C3.1782 22 2 20.8218 2 19.3684V4.63158Z"
-                                    fill="black"></path>
-                                <path
-                                    d="M10.9256 11.1882C10.5351 10.7977 10.5351 10.1645 10.9256 9.77397L18.0669 2.6327C18.8479 1.85165 20.1143 1.85165 20.8953 2.6327L21.3665 3.10391C22.1476 3.88496 22.1476 5.15129 21.3665 5.93234L14.2252 13.0736C13.8347 13.4641 13.2016 13.4641 12.811 13.0736L10.9256 11.1882Z"
-                                    fill="black"></path>
-                                <path
-                                    d="M8.82343 12.0064L8.08852 14.3348C7.8655 15.0414 8.46151 15.7366 9.19388 15.6242L11.8974 15.2092C12.4642 15.1222 12.6916 14.4278 12.2861 14.0223L9.98595 11.7221C9.61452 11.3507 8.98154 11.5055 8.82343 12.0064Z"
-                                    fill="black"></path>
-                            </svg></span> Ubah Pengaturan</button>
                 </div>
             </div>
-        </form>
-        {{-- End::Content --}}
-    </x-slot>
-    {{-- End::Post component --}}
-</x-dashboard.layout>
+            <div class="col-xl-6">
+                <div class="card h-100">
+                    <div class="card-header"><div class="card-title fs-4 fw-bolder">Logo, Media Sosial & Tautan Pusat</div></div>
+                    <div class="card-body">
+                        <div class="row">
+                            @foreach (['logo' => 'Logo header', 'logo_footer' => 'Logo footer (latar gelap)', 'favicon' => 'Favicon (png)'] as $field => $label)
+                                <div class="col-md-4">
+                                    <x-dashboard.field :name="$field" :label="$label" type="file" accept="image/*" />
+                                    <img src="{{ $setting->imageUrl($field) }}" alt="" class="h-40px mb-6 {{ $field === 'logo_footer' ? 'bg-dark p-1 rounded' : '' }}">
+                                </div>
+                            @endforeach
+                        </div>
+                        <div class="row">
+                            @foreach (['facebook' => 'Facebook', 'instagram' => 'Instagram', 'youtube' => 'YouTube', 'linkedin' => 'LinkedIn'] as $field => $label)
+                                <div class="col-md-6"><x-dashboard.field :name="$field" :label="$label" type="url" :value="$setting->{$field}" placeholder="https://" /></div>
+                            @endforeach
+                        </div>
+                        <x-dashboard.field name="url_registration" label="URL Pendaftaran Anggota (pusat)" type="url" :value="$setting->url_registration" required />
+                        <x-dashboard.field name="url_member_service" label="URL Pelayanan Anggota (pusat)" type="url" :value="$setting->url_member_service" required />
+                        <x-dashboard.field name="url_ejournal" label="URL eJurnal pusat" type="url" :value="$setting->url_ejournal" />
+                    </div>
+                </div>
+            </div>
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header"><div class="card-title fs-4 fw-bolder">Iuran & Pembayaran</div></div>
+                    <div class="card-body row">
+                        @foreach (App\Models\Member::TYPES as $type => $label)
+                            <div class="col-sm-6 col-lg-3">
+                                <x-dashboard.field name="dues_amounts[{{ $type }}]" :label="'Iuran tahunan ' . $label . ' (Rp)'" type="number" min="0" :value="$setting->dues_amounts[$type] ?? null" />
+                            </div>
+                        @endforeach
+                        <div class="col-12"><x-dashboard.field name="bank_account_info" label="Info rekening (untuk event berbayar)" type="textarea" :value="$setting->bank_account_info" /></div>
+                    </div>
+                    <div class="card-footer text-end"><button class="btn btn-sm btn-primary" type="submit">Simpan pengaturan</button></div>
+                </div>
+            </div>
+        </div>
+    </form>
+</x-dashboard.page>
