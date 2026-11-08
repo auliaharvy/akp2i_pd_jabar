@@ -52,7 +52,7 @@
                 <div class="separator my-2"></div>
 
                 <div class="menu-item px-5">
-                    <a href="{{ route('profile.index', Auth::user()->id) }}" class="menu-link px-5">Profil Saya</a>
+                    <a href="{{ route('profile.index') }}" class="menu-link px-5">Profil Saya</a>
                 </div>
 
                 <div class="menu-item px-5">

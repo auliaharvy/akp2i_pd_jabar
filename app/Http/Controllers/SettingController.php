@@ -84,7 +84,7 @@ class SettingController extends Controller
             'recruitment_status' => 'required|string',
         ]);
 
-        if ($request->file() != null) {
+        if ($request->hasFile('recruitment_thumbnail')) {
             $request->validate([
                 'recruitment_thumbnail' => 'required|file|max:2000|mimes:jpeg,jpg,png'
             ]);
@@ -94,7 +94,7 @@ class SettingController extends Controller
             }
 
             $photoFile = $request->file('recruitment_thumbnail');
-            $photoName = 'Thumbnail-Open-Recruitment' . '.' . $photoFile->getClientOriginalExtension();
+            $photoName = $photoFile->hashName();
             Storage::putFileAs('public/setting', $photoFile, $photoName);
 
             $setting->recruitment_thumbnail = $photoName;

@@ -7,7 +7,8 @@ use App\Models\Division;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\URL;
-use Yajra\DataTables\DataTables;
+use Illuminate\Validation\Rule;
+use Yajra\DataTables\Facades\DataTables;
 
 class PositionController extends Controller
 {
@@ -48,8 +49,8 @@ class PositionController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'division_id' => 'required|string',
-            'name' => 'required|string|unique:positions,name',
+            'division_id' => 'required|exists:divisions,id',
+            'name' => ['required', 'string', Rule::unique('positions')->where('division_id', $request->input('division_id'))],
         ]);
 
         Position::create([
@@ -96,8 +97,8 @@ class PositionController extends Controller
     public function update(Request $request, Position $position)
     {
         $request->validate([
-            'division_id' => 'required|string',
-            'name' => 'required|string|unique:positions,name,' . $position->id,
+            'division_id' => 'required|exists:divisions,id',
+            'name' => ['required', 'string', Rule::unique('positions')->where('division_id', $request->input('division_id'))->ignore($position)],
         ]);
 
         $position->division_id = $request->input('division_id');
@@ -126,9 +127,9 @@ class PositionController extends Controller
     public function datatable(Request $request)
     {
         if ($request->ajax()) {
-            $positions = Position::with('division')->get();
+            $positions = Position::with('division');
 
-            return DataTables::of($positions)
+            return DataTables::eloquent($positions)
                 ->addColumn('action', function ($position) {
                     return view('dashboard.position.action', compact('position'))->render();
                 })

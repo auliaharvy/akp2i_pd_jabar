@@ -184,6 +184,7 @@
                         </div>
                         <div class="separator separator-dashed border-gray-300 mt-4"></div>
                         <div class="card-body pt-10">
+                            @if ($event)
                             <div class="d-flex align-items-sm-center mb-7">
                                 <div class="symbol symbol-70px symbol-2by3 me-6">
                                     <div class="symbol-label"
@@ -199,6 +200,9 @@
                                     </div>
                                 </div>
                             </div>
+                            @else
+                            <div class="text-muted fw-bold">Belum ada acara.</div>
+                            @endif
                         </div>
                     </div>
                 </div>

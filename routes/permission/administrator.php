@@ -22,9 +22,9 @@ Route::middleware('auth:sanctum')->prefix('dashboard')->group(function () {
     Route::get('/', [HomeController::class, 'index'])->name('home');
 
     # Profil
-    Route::get('profile/{user}', [ProfileController::class, 'index'])->name('profile.index');
-    Route::patch('profile/{user}', [ProfileController::class, 'update'])->name('profile.update');
-    Route::patch('profile/password/{user}', [ProfileController::class, 'password'])->name('profile.password');
+    Route::get('profil', [ProfileController::class, 'index'])->name('profile.index');
+    Route::patch('profil', [ProfileController::class, 'update'])->name('profile.update');
+    Route::patch('profil/password', [ProfileController::class, 'password'])->name('profile.password');
     Route::get('profile-datatable', [ProfileController::class, 'datatable'])->name('profile.datatable');
 
     /*

@@ -16,7 +16,7 @@ use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Storage;
-use Yajra\DataTables\DataTables;
+use Yajra\DataTables\Facades\DataTables;
 
 class MemberController extends Controller
 {
@@ -64,11 +64,8 @@ class MemberController extends Controller
             'role' => 'required|in:administrator,member',
             'photo' => 'required|file|max:2048|mimes:jpeg,jpg,png,webp'
         ]);
-
-        $slug = Str::slug($request->input('name'));
-        $rand = random_int(1, 100);
         $photoFile = $request->file('photo');
-        $photoName = $slug . '-' . $rand . '.' . $photoFile->getClientOriginalExtension();
+        $photoName = $photoFile->hashName();
         Storage::putFileAs('public/user', $photoFile, $photoName);
 
         $member = User::create([
@@ -159,7 +156,7 @@ class MemberController extends Controller
             'role' => 'required|in:administrator,member,general',
         ]);
 
-        if ($request->file() != null) {
+        if ($request->hasFile('photo')) {
             $request->validate([
                 'photo' => 'required|file|max:2048|mimes:jpeg,jpg,png,webp'
             ]);
@@ -167,11 +164,8 @@ class MemberController extends Controller
             if (Storage::exists('public/user/' . $member->photo)) {
                 Storage::delete('public/user/' . $member->photo);
             }
-
-            $slug = Str::slug($request->input('name'));
-            $rand = random_int(1, 100);
             $photoFile = $request->file('photo');
-            $photoName = $slug . '-' . $rand . '.' . $photoFile->getClientOriginalExtension();
+            $photoName = $photoFile->hashName();
             Storage::putFileAs('public/user', $photoFile, $photoName);
 
             $member->photo = $photoName;
@@ -275,9 +269,9 @@ class MemberController extends Controller
                     'super_administrator',
                     'administrator',
                     'member'
-                ])->get();
+                ]);
 
-            return DataTables::of($members)
+            return DataTables::eloquent($members)
                 ->addColumn('role', function ($member) {
                     return view('dashboard.member.role', compact('member'))->render();
                 })

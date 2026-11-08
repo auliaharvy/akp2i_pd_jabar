@@ -274,7 +274,7 @@
 
                     {{-- Start::Tab Profil --}}
                     <div class="tab-pane fade" id="tab_profil" role="tabpanel">
-                        <form class="form" action="{{ route('profile.update', $user->id) }}" method="POST"
+                        <form class="form" action="{{ route('profile.update') }}" method="POST"
                             enctype="multipart/form-data" autocomplete="off">
                             @csrf
                             @method('PATCH')
@@ -352,7 +352,7 @@
 
                     {{-- Start::Tab Keamanan --}}
                     <div class="tab-pane fade" id="tab_keamanan" role="tabpanel">
-                        <form class="form" action="{{ route('profile.password', $user->id) }}" method="POST"
+                        <form class="form" action="{{ route('profile.password') }}" method="POST"
                             autocomplete="off">
                             @csrf
                             @method('PATCH')

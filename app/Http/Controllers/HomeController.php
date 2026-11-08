@@ -28,14 +28,11 @@ class HomeController extends Controller
             'general' => $generals->count()
         ];
 
-        $event = Event::orderBy('created_at', 'desc')->first();
-
-        // Tanggal Mulai //
-        $date_start = Carbon::parse($event->date_start)->locale('id');
-        $date_start->settings(['formatFunction' => 'translatedFormat']);
-        $date_end = Carbon::parse($event->date_end)->locale('id');
-        $date_end->settings(['formatFunction' => 'translatedFormat']);
-        $date_event = $date_start->format('j M Y') . ' - ' . $date_end->format('j M Y');
+        $event = Event::latest()->first();
+        // B8: dashboard tetap jalan sebelum ada event
+        $date_event = $event
+            ? Carbon::parse($event->date_start)->locale('id')->translatedFormat('j M Y') . ' - ' . Carbon::parse($event->date_end)->locale('id')->translatedFormat('j M Y')
+            : null;
 
         return view('dashboard.home.index', compact(
             'counter',

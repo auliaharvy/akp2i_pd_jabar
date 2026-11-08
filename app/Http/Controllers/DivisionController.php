@@ -6,7 +6,7 @@ use App\Models\Division;
 use App\Models\Position;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Session;
-use Yajra\DataTables\DataTables;
+use Yajra\DataTables\Facades\DataTables;
 
 class DivisionController extends Controller
 {
@@ -66,9 +66,9 @@ class DivisionController extends Controller
     public function show(Division $division, Request $request)
     {
         if ($request->ajax()) {
-            $positions = Position::where('division_id', '=', $division->id)->get();
+            $positions = Position::where('division_id', '=', $division->id);
 
-            return DataTables::of($positions)
+            return DataTables::eloquent($positions)
                 ->addColumn('action', function ($position) {
                     return view('dashboard.division.action_show', compact('position'))->render();
                 })
@@ -139,9 +139,9 @@ class DivisionController extends Controller
     public function datatable(Request $request)
     {
         if ($request->ajax()) {
-            $divisions = Division::all();
+            $divisions = Division::query();
 
-            return DataTables::of($divisions)
+            return DataTables::eloquent($divisions)
                 ->addColumn('action', function ($division) {
                     return view('dashboard.division.action', compact('division'))->render();
                 })

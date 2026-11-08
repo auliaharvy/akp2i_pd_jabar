@@ -9,7 +9,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Auth;
-use Yajra\DataTables\DataTables;
+use Yajra\DataTables\Facades\DataTables;
 
 class ThreadController extends Controller
 {
@@ -155,9 +155,9 @@ class ThreadController extends Controller
     {
         if (Auth::user()->hasAnyRole('super_administrator|administrator|member')) {
             if ($request->ajax()) {
-                $threads = Thread::all();
+                $threads = Thread::query();
 
-                return DataTables::of($threads)
+                return DataTables::eloquent($threads)
                     ->addColumn('status', function ($thread) {
                         return view('dashboard.thread.status', compact('thread'))->render();
                     })
@@ -171,10 +171,9 @@ class ThreadController extends Controller
         } else {
             if ($request->ajax()) {
                 $threads = Thread::with('user')
-                ->where('user_id', '=', Auth::user()->id)
-                ->get();
+                ->where('user_id', '=', Auth::user()->id);
 
-                return DataTables::of($threads)
+                return DataTables::eloquent($threads)
                     ->addColumn('status', function ($thread) {
                         return view('dashboard.thread.status', compact('thread'))->render();
                     })

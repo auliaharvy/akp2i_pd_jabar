@@ -7,7 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Session;
-use Yajra\DataTables\DataTables;
+use Yajra\DataTables\Facades\DataTables;
 
 class ResearchController extends Controller
 {
@@ -51,10 +51,8 @@ class ResearchController extends Controller
         $request->validate([
             'file' => 'required|file|max:3048|mimes:pdf'
         ]);
-
-        $slug = Str::slug($request->input('title'));
         $docFile = $request->file('file');
-        $docName = $slug . '.' . $docFile->getClientOriginalExtension();
+        $docName = $docFile->hashName();
         Storage::putFileAs('public/research', $docFile, $docName);
 
         Research::create([
@@ -99,7 +97,7 @@ class ResearchController extends Controller
     {
         $this->validate_request($request);
 
-        if ($request->file() != null) {
+        if ($request->hasFile('file')) {
             $request->validate([
                 'file' => 'required|file|max:3048|mimes:pdf'
             ]);
@@ -107,10 +105,8 @@ class ResearchController extends Controller
             if (Storage::exists('public/research/' . $research->file)) {
                 Storage::delete('public/research/' . $research->file);
             }
-
-            $slug = Str::slug($request->input('title'));
             $docFile = $request->file('file');
-            $docName = $slug . '.' . $docFile->getClientOriginalExtension();
+            $docName = $docFile->hashName();
             Storage::putFileAs('public/research', $docFile, $docName);
 
             $research->file = $docName;
@@ -147,9 +143,9 @@ class ResearchController extends Controller
     public function datatable(Request $request)
     {
         if ($request->ajax()) {
-            $researches = Research::all();
+            $researches = Research::query();
 
-            return DataTables::of($researches)
+            return DataTables::eloquent($researches)
                 ->addColumn('action', function ($research) {
                     return view('dashboard.research.action', compact('research'))->render();
                 })

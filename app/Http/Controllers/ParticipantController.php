@@ -6,11 +6,11 @@ use App\Models\Participant;
 use App\Models\Event;
 use App\Models\User;
 use Illuminate\Http\Request;
-use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
-use Yajra\DataTables\DataTables;
+use Yajra\DataTables\Facades\DataTables;
 
 class ParticipantController extends Controller
 {
@@ -54,14 +54,8 @@ class ParticipantController extends Controller
         $request->validate([
             'file' => 'required|file|max:3048|mimes:pdf'
         ]);
-
-        $user = User::where('id', '=', $request->input('user_id'))->first();
-        $event = Event::where('id', '=', $request->input('event_id'))->first();
-
-        $slugName = Str::slug($user->name);
-        $slugEvent = Str::slug($event->title);
         $docFile = $request->file('file');
-        $docName = $slugEvent . '-' . $slugName . '.' . $docFile->getClientOriginalExtension();
+        $docName = $docFile->hashName();
         Storage::putFileAs('public/participant/file', $docFile, $docName);
 
         Participant::create([
@@ -107,15 +101,9 @@ class ParticipantController extends Controller
      */
     public function update(Request $request, Participant $participant)
     {
-        $this->validate_request($request);
+        $this->validate_request($request, $participant);
 
-        $user = User::where('id', '=', $request->input('user_id'))->first();
-        $event = Event::where('id', '=', $request->input('event_id'))->first();
-
-        $slugName = Str::slug($user->name);
-        $slugEvent = Str::slug($event->title);
-
-        if ($request->input('file') != null) {
+        if ($request->hasFile('file')) {
             $request->validate([
                 'file' => 'nullable|file|max:3048|mimes:pdf',
             ]);
@@ -125,13 +113,13 @@ class ParticipantController extends Controller
             }
 
             $docFile = $request->file('file');
-            $docName = $slugEvent . '-' . $slugName . '.' . $docFile->getClientOriginalExtension();
+            $docName = $docFile->hashName();
             Storage::putFileAs('public/participant/file', $docFile, $docName);
 
             $participant->file = $docName;
         }
 
-        if ($request->input('certificate') != null) {
+        if ($request->hasFile('certificate')) {
             $request->validate([
                 'certificate' => 'nullable|file|max:3048|mimes:jpeg,jpg,png,webp'
             ]);
@@ -141,7 +129,7 @@ class ParticipantController extends Controller
             }
 
             $cerFile = $request->file('certificate');
-            $cerName = $slugEvent . '-' . $slugName . '.' . $cerFile->getClientOriginalExtension();
+            $cerName = $cerFile->hashName();
             Storage::putFileAs('public/participant/certificate', $cerFile, $cerName);
 
             $participant->certificate = $cerName;
@@ -171,11 +159,8 @@ class ParticipantController extends Controller
         if (Storage::exists('public/participant/certificate/' . $participant->certificate)) {
             Storage::delete('public/participant/certificate/' . $participant->certificate);
         }
-
-        $slugname = Str::slug($request->input('name'));
-        $slugtitle = Str::slug($request->input('title'));
         $cerFile = $request->file('certificate');
-        $cerName = $slugname . '-' . $slugtitle . '.' . $cerFile->getClientOriginalExtension();
+        $cerName = $cerFile->hashName();
         Storage::putFileAs('public/participant/certificate', $cerFile, $cerName);
 
         $participant->certificate = $cerName;
@@ -249,9 +234,9 @@ class ParticipantController extends Controller
     public function datatable(Request $request)
     {
         if ($request->ajax()) {
-            $participants = Participant::with('user', 'event')->get();
+            $participants = Participant::with('user', 'event');
 
-            return DataTables::of($participants)
+            return DataTables::eloquent($participants)
                 ->addColumn('action', function ($participant) {
                     return view('dashboard.participant.action', compact('participant'))->render();
                 })
@@ -264,11 +249,12 @@ class ParticipantController extends Controller
     /**
      * Validate request
      */
-    public function validate_request($request)
+    public function validate_request($request, ?Participant $participant = null)
     {
         $request->validate([
-            'event_id' => 'required|numeric',
-            'user_id' => 'required|numeric',
+            'event_id' => 'required|exists:events,id',
+            // B11: satu user hanya sekali per event
+            'user_id' => ['required', 'exists:users,id', Rule::unique('participants')->where('event_id', $request->input('event_id'))->ignore($participant)],
             'reason' => 'required|string',
             'data_status' => 'required|boolean'
         ]);

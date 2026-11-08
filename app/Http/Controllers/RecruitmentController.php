@@ -8,7 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Storage;
-use Yajra\DataTables\DataTables;
+use Yajra\DataTables\Facades\DataTables;
 
 class RecruitmentController extends Controller
 {
@@ -49,7 +49,7 @@ class RecruitmentController extends Controller
 
         $slug = Str::slug($user->name);
         $docFile = $request->file('file');
-        $docName = $slug . '.' . $docFile->getClientOriginalExtension();
+        $docName = $docFile->hashName();
         Storage::putFileAs('public/recruitment', $docFile, $docName);
 
         Recruitment::create([
@@ -100,7 +100,7 @@ class RecruitmentController extends Controller
 
         $slugName = Str::slug($user->name);
 
-        if ($request->input('file') != null) {
+        if ($request->hasFile('file')) {
             $request->validate([
                 'file' => 'recruitment|file|max:3048|mimes:pdf',
             ]);
@@ -110,7 +110,7 @@ class RecruitmentController extends Controller
             }
 
             $docFile = $request->file('file');
-            $docName = $slugName . '.' . $docFile->getClientOriginalExtension();
+            $docName = $docFile->hashName();
             Storage::putFileAs('public/recruitment', $docFile, $docName);
 
             $recruitment->file = $docName;
@@ -143,9 +143,9 @@ class RecruitmentController extends Controller
     public function datatable(Request $request)
     {
         if ($request->ajax()) {
-            $recruitments = Recruitment::with('user')->get();
+            $recruitments = Recruitment::with('user');
 
-            return DataTables::of($recruitments)
+            return DataTables::eloquent($recruitments)
                 ->addColumn('document', function ($recruitment) {
                     return view('dashboard.recruitment.document', compact('recruitment'))->render();
                 })

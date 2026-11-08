@@ -12,7 +12,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
-use Yajra\DataTables\DataTables;
+use Yajra\DataTables\Facades\DataTables;
 
 class ProfileController extends Controller
 {
@@ -22,13 +22,9 @@ class ProfileController extends Controller
         $this->middleware(['permission:profile-update'])->only(['update', 'password']);
     }
 
-    public function index(User $user)
+    public function index()
     {
-        // Check Active User //
-        $activeUser = Auth::user();
-        if ($user->id != $activeUser->id) {
-            return redirect()->route('profile.index', $activeUser->id);
-        }
+        $user = Auth::user();
 
         // Counter //
         $counter = [
@@ -49,8 +45,11 @@ class ProfileController extends Controller
     /**
      * Update User Profile.
      */
-    public function update(Request $request, User $user)
+    public function update(Request $request)
     {
+        // B1: hanya user yang sedang login, tidak pernah dari URL
+        $user = $request->user();
+
         $request->validate([
             'name' => 'required|string|max:255',
             'gender' => 'required|in:L,P',
@@ -61,7 +60,7 @@ class ProfileController extends Controller
             'email' => 'required|email|unique:users,email,' . $user->id
         ]);
 
-        if ($request->file() != null) {
+        if ($request->hasFile('photo')) {
             $request->validate([
                 'photo' => 'required|file|max:2048|mimes:jpeg,jpg,png,webp'
             ]);
@@ -71,7 +70,7 @@ class ProfileController extends Controller
             }
 
             $photoFile = $request->file('photo');
-            $photoName = $request->name . '.' . $photoFile->getClientOriginalExtension();
+            $photoName = $photoFile->hashName();
             Storage::putFileAs('public/user', $photoFile, $photoName);
 
             $user->photo = $photoName;
@@ -86,14 +85,16 @@ class ProfileController extends Controller
         $user->email = $request->input('email');
         $user->save();
 
-        return redirect()->route('profile.index', $user->id)->with('success', 'Informasi akun telah diubah.');
+        return redirect()->route('profile.index')->with('success', 'Informasi akun telah diubah.');
     }
 
     /**
      * Update User Password.
      */
-    public function password(Request $request, User $user)
+    public function password(Request $request)
     {
+        $user = $request->user();
+
         $request->validate([
             'password' => ['nullable', 'string', 'min:8', 'max:255'],
             'password_confirm' => ['same:password'],
@@ -105,7 +106,7 @@ class ProfileController extends Controller
 
         $user->save();
 
-        return redirect()->route('profile.index', $user->id)->with('success', 'Password berhasil diubah.');
+        return redirect()->route('profile.index')->with('success', 'Password berhasil diubah.');
     }
 
     /**
@@ -119,9 +120,9 @@ class ProfileController extends Controller
             $participants = Participant::with('event')->where([
                 ['user_id', '=', $user_id],
                 ['certificate', '!=', NULL]
-            ])->get();
+            ]);
 
-            return DataTables::of($participants)
+            return DataTables::eloquent($participants)
             ->addColumn('action', function ($participant) {
                 return view('dashboard.profile.action', compact('participant'))->render();
             })

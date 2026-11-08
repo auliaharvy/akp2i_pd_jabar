@@ -13,7 +13,7 @@ use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Storage;
-use Yajra\DataTables\DataTables;
+use Yajra\DataTables\Facades\DataTables;
 
 class GeneralController extends Controller
 {
@@ -60,11 +60,8 @@ class GeneralController extends Controller
             'password_confirm' => 'same:password',
             'photo' => 'required|file|max:2048|mimes:jpeg,jpg,png,webp'
         ]);
-
-        $slug = Str::slug($request->input('name'));
-        $rand = random_int(1, 100);
         $photoFile = $request->file('photo');
-        $photoName = $slug . '-' . $rand . '.' . $photoFile->getClientOriginalExtension();
+        $photoName = $photoFile->hashName();
         Storage::putFileAs('public/user', $photoFile, $photoName);
 
         $general = User::create([
@@ -140,7 +137,7 @@ class GeneralController extends Controller
             'password_confirm' => 'same:password',
         ]);
 
-        if ($request->file() != null) {
+        if ($request->hasFile('photo')) {
             $request->validate([
                 'photo' => 'required|file|max:2048|mimes:jpeg,jpg,png,webp'
             ]);
@@ -148,11 +145,8 @@ class GeneralController extends Controller
             if (Storage::exists('public/user/' . $general->photo)) {
                 Storage::delete('public/user/' . $general->photo);
             }
-
-            $slug = Str::slug($request->input('name'));
-            $rand = random_int(1, 100);
             $photoFile = $request->file('photo');
-            $photoName = $slug . '-' . $rand . '.' . $photoFile->getClientOriginalExtension();
+            $photoName = $photoFile->hashName();
             Storage::putFileAs('public/user', $photoFile, $photoName);
 
             $general->photo = $photoName;
@@ -201,9 +195,9 @@ class GeneralController extends Controller
                 'id',
                 'name',
                 'email'
-            )->role(['general'])->get();
+            )->role(['general']);
 
-            return DataTables::of($generals)
+            return DataTables::eloquent($generals)
                 ->addColumn('action', function ($general) {
                     return view('dashboard.general.action', compact('general'))->render();
                 })

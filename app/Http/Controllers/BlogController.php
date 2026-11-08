@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Session;
-use Yajra\DataTables\DataTables;
+use Yajra\DataTables\Facades\DataTables;
 
 class BlogController extends Controller
 {
@@ -56,7 +56,7 @@ class BlogController extends Controller
 
         $slug = Str::slug($request->input('title') . '-' . time());
         $photoFile = $request->file('thumbnail');
-        $photoName = $slug . '.' . $photoFile->getClientOriginalExtension();
+        $photoName = $photoFile->hashName();
         Storage::putFileAs('public/blog', $photoFile, $photoName);
 
         Blog::create([
@@ -111,7 +111,7 @@ class BlogController extends Controller
 
         $slug = Str::slug($request->input('title') . '-' . time());
 
-        if ($request->file() != null) {
+        if ($request->hasFile('thumbnail')) {
             $request->validate([
                 'thumbnail' => 'nullable|file|max:3048|mimes:jpeg,jpg,png,webp'
             ]);
@@ -121,7 +121,7 @@ class BlogController extends Controller
             }
 
             $photoFile = $request->file('thumbnail');
-            $photoName = $slug . '.' . $photoFile->getClientOriginalExtension();
+            $photoName = $photoFile->hashName();
             Storage::putFileAs('public/blog', $photoFile, $photoName);
 
             $blog->thumbnail = $photoName;
@@ -160,9 +160,9 @@ class BlogController extends Controller
     {
         if (Auth::user()->hasAnyRole('super_administrator|administrator|member')) {
             if ($request->ajax()) {
-                $blogs = Blog::all();
+                $blogs = Blog::query();
     
-                return DataTables::of($blogs)
+                return DataTables::eloquent($blogs)
                     ->addColumn('status', function ($blog) {
                         return view('dashboard.blog.status', compact('blog'))->render();
                     })
@@ -176,10 +176,9 @@ class BlogController extends Controller
         } else {
             if ($request->ajax()) {
                 $blogs = Blog::with('user')
-                ->where('user_id', '=', Auth::user()->id)
-                ->get();
+                ->where('user_id', '=', Auth::user()->id);
     
-                return DataTables::of($blogs)
+                return DataTables::eloquent($blogs)
                     ->addColumn('status', function ($blog) {
                         return view('dashboard.blog.status', compact('blog'))->render();
                     })

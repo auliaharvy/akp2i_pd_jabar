@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Session;
-use Yajra\DataTables\DataTables;
+use Yajra\DataTables\Facades\DataTables;
 
 class EventController extends Controller
 {
@@ -62,7 +62,7 @@ class EventController extends Controller
 
         $slug = Str::slug($request->input('title') . '-' . time());
         $photoFile = $request->file('thumbnail');
-        $photoName = $slug . '.' . $photoFile->getClientOriginalExtension();
+        $photoName = $photoFile->hashName();
         Storage::putFileAs('public/event', $photoFile, $photoName);
 
         Event::create([
@@ -98,9 +98,9 @@ class EventController extends Controller
     public function show(Event $event, Request $request)
     {
         if ($request->ajax()) {
-            $participants = Participant::with('user')->where('event_id', '=', $event->id)->get();
+            $participants = Participant::with('user')->where('event_id', '=', $event->id);
 
-            return DataTables::of($participants)
+            return DataTables::eloquent($participants)
                 ->addColumn('status', function ($participant) {
                     return view('dashboard.participant.status', compact('participant'))->render();
                 })
@@ -177,7 +177,7 @@ class EventController extends Controller
 
         $slug = Str::slug($request->input('title') . '-' . time());
 
-        if ($request->file() != null) {
+        if ($request->hasFile('thumbnail')) {
             $request->validate([
                 'thumbnail' => 'nullable|file|max:3048|mimes:jpeg,jpg,png,webp'
             ]);
@@ -187,7 +187,7 @@ class EventController extends Controller
             }
 
             $photoFile = $request->file('thumbnail');
-            $photoName = $slug . '.' . $photoFile->getClientOriginalExtension();
+            $photoName = $photoFile->hashName();
             Storage::putFileAs('public/event', $photoFile, $photoName);
 
             $event->thumbnail = $photoName;
@@ -258,9 +258,9 @@ class EventController extends Controller
     public function datatable(Request $request)
     {
         if ($request->ajax()) {
-            $events = Event::all();
+            $events = Event::query();
 
-            return DataTables::of($events)
+            return DataTables::eloquent($events)
                 ->addColumn('status', function ($event) {
                     return view('dashboard.event.status', compact('event'))->render();
                 })

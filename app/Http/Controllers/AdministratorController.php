@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use Illuminate\Http\Request;
-use Yajra\DataTables\DataTables;
+use Yajra\DataTables\Facades\DataTables;
 
 class AdministratorController extends Controller
 {
@@ -32,9 +32,9 @@ class AdministratorController extends Controller
     {
         if ($request->ajax()) {
             $administrators = User::with('division', 'position')
-                ->role(['member'])->get();
+                ->role(['member']);
 
-            return DataTables::of($administrators)
+            return DataTables::eloquent($administrators)
                 ->addColumn('role', function ($administrator) {
                     return view('dashboard.user.role', compact('administrator'))->render();
                 })
@@ -131,9 +131,9 @@ class AdministratorController extends Controller
                 ->role([
                     'super_administrator',
                     'administrator'
-                ])->get();
+                ]);
 
-            return DataTables::of($administrators)
+            return DataTables::eloquent($administrators)
                 ->addColumn('role', function ($administrator) {
                     return view('dashboard.user.role', compact('administrator'))->render();
                 })
