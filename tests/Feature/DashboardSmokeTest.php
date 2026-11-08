@@ -6,6 +6,7 @@ use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Str;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
 
 /**
@@ -43,7 +44,7 @@ class DashboardSmokeTest extends TestCase
         ];
     }
 
-    /** @dataProvider roleEmails */
+    #[DataProvider('roleEmails')]
     public function test_dashboard_pages_do_not_error(string $email)
     {
         $user = User::where('email', $email)->firstOrFail();
