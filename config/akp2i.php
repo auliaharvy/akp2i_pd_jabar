@@ -2,7 +2,7 @@
 
 return [
     // PD aktif aplikasi (PRD 8.1). Diisi id organizations PD Jabar setelah seed M1.
-    'organization_id' => env('AKP2I_ORGANIZATION_ID'),
+    'organization_id' => env('AKP2I_ORGANIZATION_ID') ?: null,
 
     // Tautan layanan Pengurus Pusat; default bila Setting belum diisi (PRD 8.5)
     'urls' => [
