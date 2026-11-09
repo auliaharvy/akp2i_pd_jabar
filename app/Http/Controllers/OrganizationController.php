@@ -94,6 +94,8 @@ class OrganizationController extends Controller
             'code' => ['nullable', 'string', 'max:20', Rule::unique('organizations')->ignore($organization)],
             'city' => 'nullable|string|max:255',
             'address' => 'nullable|string|max:1000',
+            'profile' => 'nullable|string|max:5000',
+            'greeting' => 'nullable|string|max:5000',
             'phone' => 'nullable|string|max:50',
             'email' => 'nullable|email|max:255',
         ]);

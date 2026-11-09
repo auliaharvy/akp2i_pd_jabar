@@ -10,7 +10,7 @@
     <meta name="viewport" content="width= device-width, initial-scale=1, shrink-to-fit=no" />
     <meta property="og:locale" content="id, in" />
     <meta property="og:site_name" content="{{ config('app.name') }}" />
-    <link rel="shortcut icon" href="{{ asset('media/logos/akp2i-jabar.svg') }}" />
+    <link rel="shortcut icon" href="{{ asset('media/logos/akp2i-icon.png') }}" />
     <!--begin::Fonts-->
     <link rel="preconnect" href="https://fonts.gstatic.com">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Poppins:300,400,500,600,700" />
@@ -32,7 +32,7 @@
             <div class="d-flex flex-center flex-column flex-column-fluid p-10 pb-lg-20">
                 <!--begin::Logo-->
                 <a href="#" class="mb-12">
-                    <img alt="Logo" src="{{ asset('media/logos/akp2i-jabar.svg') }}" class="h-100px" />
+                    <img alt="Logo" src="{{ asset('media/logos/akp2i.png') }}" class="h-100px" />
                 </a>
                 <!--end::Logo-->
                 <!--begin::Wrapper-->

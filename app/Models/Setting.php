@@ -29,7 +29,7 @@ class Setting extends Model
         return Cache::rememberForever('site.settings', fn () => static::firstOrCreate([], ['email' => 'sekretariat@akp2i-jabar.id']));
     }
 
-    public function imageUrl(string $field, string $fallback = 'media/logos/akp2i-jabar.svg'): string
+    public function imageUrl(string $field, string $fallback = 'media/logos/akp2i.png'): string
     {
         return $this->{$field} ? Storage::disk('public')->url($this->{$field}) : asset($fallback);
     }

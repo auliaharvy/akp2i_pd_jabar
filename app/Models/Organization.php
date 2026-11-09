@@ -14,7 +14,7 @@ class Organization extends Model
 
     public const TYPES = ['pusat' => 'Pengurus Pusat', 'pd' => 'Pengurus Daerah', 'pc' => 'Pengurus Cabang'];
 
-    protected $fillable = ['parent_id', 'type', 'name', 'slug', 'code', 'city', 'address', 'phone', 'email', 'is_active'];
+    protected $fillable = ['parent_id', 'type', 'name', 'slug', 'code', 'city', 'address', 'phone', 'email', 'profile', 'greeting', 'is_active'];
 
     protected $casts = ['is_active' => 'boolean'];
 

@@ -29,7 +29,7 @@ class SettingController extends Controller
             'phone' => 'nullable|string|max:30',
             'whatsapp' => 'nullable|string|max:30',
             'address' => 'nullable|string|max:255',
-            'maps_embed' => ['nullable', 'string', 'max:2000', 'regex:#^https://www\.google\.com/maps/embed\?#'],
+            'maps_embed' => ['nullable', 'string', 'max:2000', 'regex:#^https://(www\.google\.com/maps/embed\?|maps\.google\.com/maps\?.*output=embed)#'],
             'facebook' => 'nullable|url|max:255',
             'instagram' => 'nullable|url|max:255',
             'youtube' => 'nullable|url|max:255',

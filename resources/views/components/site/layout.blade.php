@@ -23,7 +23,7 @@
     <meta property="og:url" content="{{ $canonical }}">
     <meta property="og:image" content="{{ $image }}">
     <meta name="twitter:card" content="summary_large_image">
-    <link rel="icon" href="{{ $site->imageUrl('favicon') }}">
+    <link rel="icon" href="{{ $site->imageUrl('favicon', 'media/logos/akp2i-icon.png') }}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap">

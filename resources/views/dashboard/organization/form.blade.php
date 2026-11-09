@@ -18,6 +18,8 @@
                     <div class="col-md-3"><x-dashboard.field name="phone" label="Telepon" :value="$organization->phone" /></div>
                     <div class="col-md-3"><x-dashboard.field name="email" label="Email" type="email" :value="$organization->email" /></div>
                     <div class="col-12"><x-dashboard.field name="address" label="Alamat" type="textarea" :value="$organization->address" /></div>
+                    <div class="col-md-6"><x-dashboard.field name="profile" label="Profil cabang (tampil di halaman publik PC)" type="textarea" rows="6" :value="$organization->profile" /></div>
+                    <div class="col-md-6"><x-dashboard.field name="greeting" label="Sambutan Ketua PC" type="textarea" rows="6" :value="$organization->greeting" /></div>
                 </div>
                 <div class="form-check form-switch">
                     <input class="form-check-input" type="checkbox" id="is_active" name="is_active" value="1" @checked(old('is_active', $organization->is_active))>
